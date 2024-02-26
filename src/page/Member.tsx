@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ColumnDef } from '@tanstack/react-table'
 import { fetcher } from "@/api";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { DataTable } from "./data-table";
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
     Drawer,
     DrawerClose,
@@ -14,6 +15,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Save, Trash2, X } from "lucide-react";
 import axios from 'axios';
+import { MemberType, ResponseMember } from "@/types/member";
 
 
 const columns: ColumnDef<MemberType>[] = [
@@ -21,9 +23,6 @@ const columns: ColumnDef<MemberType>[] = [
         accessorKey: 'avatar',
         header: () => null,
         cell(props) {
-            const onImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
-                event.currentTarget.src = "https://avatar.iran.liara.run/public/5";
-            };
             const urlpic = props.row.original.picture ?? 'https://avatar.iran.liara.run/public/5'
             return (
                 <div className="avatar">
@@ -91,13 +90,9 @@ const columns: ColumnDef<MemberType>[] = [
             return (
                 <div className="flex justify-center w-[120px]">
                     <div className="text-sm ">{props.row.original.active ?
-
-
-
                         <div className=" bg-[#EBF4E4] w-[120px] text-[#97B67F] rounded-full text-center">
                             อนุมัติ
                         </div>
-
                         :
                         <div className=" bg-[#5BC4FF33] w-[120px] text-[#5BC4FF] rounded-full text-center">
                             รออนุมัติ
@@ -127,18 +122,16 @@ const columns: ColumnDef<MemberType>[] = [
 ]
 
 const Member = () => {
-    const [currentPage, setCurrentPage] = useState(1);
     const { data: member } = useSWR<ResponseMember>(
-        `https://api-beacon.adcm.co.th/api/user?limit=10&page=${currentPage}`,
+        `https://api-beacon.adcm.co.th/api/user?limit=10`,
         fetcher
     );
     const [memberEmail, setMemberEmail] = useState('');
     const [memberRole, setMemberRole] = useState('');
-    const ButtonRef = useRef<HTMLButtonElement>(null)
 
     console.log('member', member)
 
-    const addRecord = (member, role) => {
+    const addRecord = (member : string, role : string) => {
         axios.post('https://api-beacon.adcm.co.th/api/user',
             {
                 email: member,
@@ -154,9 +147,12 @@ const Member = () => {
                 console.log(res)
                 alert('เพิ่มสมาชิกสำเร็จ')
                 window.location.reload()
-            }).catch(err => {
-                alert('เพิ่มสมาชิกไม่สำเร็จ')
-            })
+            }).catch(
+                err => {
+                    console.log(err)
+                    alert('เพิ่มสมาชิกไม่สำเร็จ')
+                }
+            )
     }
 
 
@@ -167,7 +163,7 @@ const Member = () => {
             >
                 <h1 className="text-3xl font-bold text-[#B28A4C] mb-2">สมาชิก</h1>
                 <button
-                    onClick={() => document.getElementById('createmember').showModal()}
+                    onClick={() => (document.getElementById('createmember') as HTMLDialogElement)?.showModal()}
                     className="btn outline-none btn-sm  btn-primary text-white flex items-center"
                 >
                     <Plus /> ชวนสมาชิก
@@ -369,7 +365,7 @@ function DrawerDevice({ member }: Readonly<{ member: MemberType }>) {
                 <DrawerFooter>
                     <Button
 
-                        onClick={() => document.getElementById('my_modal_1').showModal()}
+                        onClick={() => (document.getElementById('my_modal_1') as HTMLDialogElement).showModal()}
                         variant="destructive"
                         className="w-full flex items-center gap-2"
                     >

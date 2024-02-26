@@ -23,7 +23,7 @@ type MemberType = {
     type: string;
     length: number;
     pagination: Pagination;
-    data: Member[];
+    data: MemberType[];
   };
   
   type ResponseMember = {
