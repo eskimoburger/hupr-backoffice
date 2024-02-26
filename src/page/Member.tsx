@@ -91,7 +91,7 @@ const columns: ColumnDef<MemberType>[] = [
                 <div className="flex justify-center w-[120px]">
                     <div className="text-sm ">{props.row.original.active ?
                         <div className=" bg-[#EBF4E4] w-[120px] text-[#97B67F] rounded-full text-center">
-                            อนุมัติ
+                            ใช้งานอยู่
                         </div>
                         :
                         <div className=" bg-[#5BC4FF33] w-[120px] text-[#5BC4FF] rounded-full text-center">
@@ -222,7 +222,7 @@ const Member = () => {
                                 onClick={() => {
                                     addRecord(memberEmail, memberName, memberSurename)
                                 }}
-                            >บันทึก</button>
+                            >ยืนยัน</button>
                         </div>
                     </div>
                 </dialog>
@@ -335,13 +335,13 @@ function DrawerDevice({ member }: Readonly<{ member: MemberType }>) {
                         สถานะ :
                         <select
                             className="select select-bordered w-full mt-2 max-w-xs"
-                            value={memberActive ? 'อนุมัติ' : 'ไม่อนุมัติ'}
+                            value={memberActive ? 'ใช้งานอยู่' : 'ไม่อนุมัติ'}
                             onChange={(e) => {
-                                setMemberActive(e.target.value === 'อนุมัติ' ? true : false);
+                                setMemberActive(e.target.value === 'ใช้งานอยู่' ? true : false);
                                 setIsEdit(true);
                             }}
                         >
-                            <option>อนุมัติ</option>
+                            <option>ใช้งานอยู่</option>
                             <option>ไม่อนุมัติ</option>
                         </select>
 
