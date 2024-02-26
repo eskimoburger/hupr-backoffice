@@ -91,7 +91,7 @@ const columns: ColumnDef<MemberType>[] = [
                 <div className="flex justify-center w-[120px]">
                     <div className="text-sm ">{props.row.original.active ?
                         <div className=" bg-[#EBF4E4] w-[120px] text-[#97B67F] rounded-full text-center">
-                            อนุมัติ
+                            ใช้งานอยู่
                         </div>
                         :
                         <div className=" bg-[#5BC4FF33] w-[120px] text-[#5BC4FF] rounded-full text-center">
@@ -127,15 +127,18 @@ const Member = () => {
         fetcher
     );
     const [memberEmail, setMemberEmail] = useState('');
-    const [memberRole, setMemberRole] = useState('');
+    const [memberName, setMemberName] = useState('');
+    const [memberSurename, setMemberSurename] = useState('');
 
     console.log('member', member)
 
-    const addRecord = (member : string, role : string) => {
+    const addRecord = (member : string, name : string , surename : string) => {
         axios.post('https://api-beacon.adcm.co.th/api/user',
             {
                 email: member,
-                role: role,
+                first_name: name,
+                last_name: surename,
+                role: 'admin',
                 department_uuid: "dffdedd0-cbd4-11ee-8557-07e6505aa0d7"
             },
             {
@@ -166,7 +169,7 @@ const Member = () => {
                     onClick={() => (document.getElementById('createmember') as HTMLDialogElement)?.showModal()}
                     className="btn outline-none btn-sm  btn-primary text-white flex items-center"
                 >
-                    <Plus /> ชวนสมาชิก
+                    <Plus /> เพิ่มผู้ใช้
                 </button>
                 <dialog id="createmember" className="modal">
                     <div className="modal-box">
@@ -174,13 +177,13 @@ const Member = () => {
 
                             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                         </form>
-                        <h3 className="font-bold text-lg">เชิญสมาชิก</h3>
-                        <div className="grid grid-cols-2 gap-4">
+                        <h3 className="font-bold text-lg text-center text-[#B28A4C]">เพิ่มผู้ใช้</h3>
+                        <div className="flex flex-col gap-4 mt-4 w-full ">
                             <div>
                                 อีเมล : <input
                                     type="text"
-                                    placeholder="adcm@mail.com"
-                                    className="input input-bordered bg-white w-full mt-2 max-w-xs"
+                                    placeholder="กรุณากรอกอีเมล"
+                                    className="input input-bordered bg-white w-full mt-2 input-sm"
                                     value={memberEmail}
                                     onChange={(e) => {
                                         setMemberEmail(e.target.value);
@@ -189,17 +192,27 @@ const Member = () => {
                             </div>
 
                             <div>
-                                ตำแหน่ง :
-                                <select
-                                    className="select select-bordered w-full mt-2 max-w-xs"
-                                    value={memberRole}
+                                ชื่อ : <input
+                                    type="text"
+                                    placeholder="กรุณากรอกชื่อ"
+                                    className="input input-bordered bg-white w-full mt-2 input-sm"
+                                    value={memberName}
                                     onChange={(e) => {
-                                        setMemberRole(e.target.value);
+                                        setMemberName(e.target.value);
                                     }}
-                                >
-                                    <option>แอดมิน</option>
-                                    <option>ผู้ดำเนินการ</option>
-                                </select>
+                                />
+                            </div>
+
+                            <div>
+                                นามสกุล : <input
+                                    type="text"
+                                    placeholder="กรุณากรอกนามสกุล"
+                                    className="input input-bordered bg-white w-full mt-2 input-sm"
+                                    value={memberSurename}
+                                    onChange={(e) => {
+                                        setMemberSurename(e.target.value);
+                                    }}
+                                />
                             </div>
                         </div>
 
@@ -207,9 +220,9 @@ const Member = () => {
                         <div className="modal-action">
                             <button className="btn text-[#FFFFFF] bg-[#B28A4C]"
                                 onClick={() => {
-                                    addRecord(memberEmail, memberRole)
+                                    addRecord(memberEmail, memberName, memberSurename)
                                 }}
-                            >บันทึก</button>
+                            >ยืนยัน</button>
                         </div>
                     </div>
                 </dialog>
@@ -322,13 +335,13 @@ function DrawerDevice({ member }: Readonly<{ member: MemberType }>) {
                         สถานะ :
                         <select
                             className="select select-bordered w-full mt-2 max-w-xs"
-                            value={memberActive ? 'อนุมัติ' : 'ไม่อนุมัติ'}
+                            value={memberActive ? 'ใช้งานอยู่' : 'ไม่อนุมัติ'}
                             onChange={(e) => {
-                                setMemberActive(e.target.value === 'อนุมัติ' ? true : false);
+                                setMemberActive(e.target.value === 'ใช้งานอยู่' ? true : false);
                                 setIsEdit(true);
                             }}
                         >
-                            <option>อนุมัติ</option>
+                            <option>ใช้งานอยู่</option>
                             <option>ไม่อนุมัติ</option>
                         </select>
 
