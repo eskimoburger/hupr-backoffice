@@ -13,7 +13,7 @@ import {
   Sidebar as ProSidebar,
   SubMenu,
 } from "react-pro-sidebar";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo";
 import axios from "axios";
 
@@ -44,6 +44,7 @@ const Navbar: FC<NavbarProps> = ({
   broken,
   // onLogout,
 }) => {
+  const navigate = useNavigate();
   async function handleConnect() {
     try {
       const response = await axios.post(
@@ -57,7 +58,8 @@ const Navbar: FC<NavbarProps> = ({
         "accessToken",
         response.data.response_data.data.access_token
       );
-      window.location.reload();
+
+      navigate(0);
     } catch (err) {
       console.log("err", err);
     }
