@@ -67,8 +67,8 @@ const DashboardPage = () => {
   const [totalItems, setTotalItems] = useState(0);
   const { data: user, isLoading: userLoading } = useSWR<ResponseUser>(
     selectedDevice === "0"
-      ? `https://api-beacon.adcm.co.th/api/overview/user/all-user?limit=10&page=${currentPage}`
-      : `https://api-beacon.adcm.co.th/api/overview/user/all-user/${selectedDevice}?limit=10&page=${currentPage}`,
+      ? `https://api-beacon.adcm.co.th/api/overview/user/all-user?limit=5&page=${currentPage}`
+      : `https://api-beacon.adcm.co.th/api/overview/user/all-user/${selectedDevice}?limit=5&page=${currentPage}`,
     fetcher
   );
 
@@ -117,35 +117,36 @@ const DashboardPage = () => {
           circleColor="bg-[#285FCA]"
         />
       </div>
-
-      <div className="mb-5">
-        <h2 className="text-xl text-[#666666] mb-2 ">กราฟ</h2>
-        <div
-          className="h-[500px] border-2 rounded-[40px] p-3 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="">
+          <h2 className="text-xl text-[#666666] mb-2 ">กราฟ</h2>
+          <div
+            className="h-[500px] border-2 rounded-[40px] p-3 
           border-[#B28A4C] shadow-[16px_16px_20px_0px_rgba(178,138,76,0.2)]
         "
-        >
-          <LineChart
-            data={overview?.response_data.data.graph ?? []}
-            isLoading={isLoading}
+          >
+            <LineChart
+              data={overview?.response_data.data.graph ?? []}
+              isLoading={isLoading}
+            />
+          </div>
+        </div>
+        <div>
+          <h2 className="text-xl text-[#666666] mb-2 ">ผู้ใช้</h2>
+          <DataTable
+            loading={userLoading}
+            columns={columns}
+            data={user?.response_data.data ?? []}
+          />
+          <br />
+
+          <PaginationCustom
+            currentPage={currentPage}
+            pageSize={10}
+            totalItems={totalItems}
+            setCurrentPage={setCurrentPage}
           />
         </div>
-      </div>
-      <div>
-        <h2 className="text-xl text-[#666666] mb-2 ">ผู้ใช้</h2>
-        <DataTable
-          loading={userLoading}
-          columns={columns}
-          data={user?.response_data.data ?? []}
-        />
-        <br />
-
-        <PaginationCustom
-          currentPage={currentPage}
-          pageSize={10}
-          totalItems={totalItems}
-          setCurrentPage={setCurrentPage}
-        />
       </div>
     </div>
   );
