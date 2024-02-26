@@ -2,6 +2,7 @@ import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Layout } from "./layout/Layout";
 import BeaconPage from "./page/BeaconPage";
 import DashboardPage from "./page/DashboardPage";
+import Member from "./page/Member";
 import { CreateContent, ListContent } from "./page/content";
 
 const router = createBrowserRouter([
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path : "member",
+        element : <Member />
+      }
     ],
   },
 ]);

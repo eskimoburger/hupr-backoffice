@@ -141,6 +141,7 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
     {
       key: "member",
       label: "สมาชิก",
+      path: "/member",
     },
   ];
 
