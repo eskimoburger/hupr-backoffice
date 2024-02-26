@@ -89,7 +89,7 @@ const columns: ColumnDef<MemberType>[] = [
         header: 'สถานะ',
         cell(props) {
             return (
-                <div className="flex items-center w-[120px]">
+                <div className="flex justify-center w-[120px]">
                     <div className="text-sm ">{props.row.original.active ?
 
 
