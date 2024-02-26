@@ -79,7 +79,7 @@ const Navbar: FC<NavbarProps> = ({
             toggle
           </button>
         )}
-        <button className="text-black text-4xl font-bold flex items-center">
+        <button className="text-[#666666] text-4xl font-bold flex items-center">
           <span className="text-[#B28A4C]">HU</span>
           <span>PR</span>
           <Logo />
