@@ -100,13 +100,13 @@ const DashboardPage = () => {
       <div className="grid  gap-3 my-5 xl:grid-cols-3">
         <SummaryBox
           label="จำนวนข้อความที่ส่งให้"
-          value={overview?.response_data.data.card.user_count ?? 0}
+          value={overview?.response_data.data.card.message_count ?? 0}
           circleColor="bg-[#48DAA5]"
           textLabelColor="text-[#48DAA5]"
         />
         <SummaryBox
           label="จำนวนผู้ใช้ที่ไม่ซ้ำ"
-          value={overview?.response_data.data.card.message_count ?? 0}
+          value={overview?.response_data.data.card.user_count ?? 0}
           textLabelColor="text-[#EB96E7] "
           circleColor="bg-[#EB96E7]"
         />
