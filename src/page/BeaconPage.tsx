@@ -283,7 +283,10 @@ function DrawerEditDevice({ device }: Readonly<{ device: Device }>) {
       }}
     >
       <DrawerTrigger asChild>
-        <MoreHorizontal className="text-[#FFFFFF] bg-[#B28A4C] rounded-full" />
+      <button className="btn-xs btn-circle bg-[#B28A4C] hover:bg-[#B28A4C]/80 hover:text-white">
+      <MoreHorizontal className="text-[#FFFFFF]  rounded-full" />
+</button>
+       
 
       </DrawerTrigger>
       <DrawerContent className="top-0 right-0 left-auto mt-0 w-[500px]  rounded-none  ">
