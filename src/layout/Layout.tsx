@@ -16,6 +16,11 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/logo";
 import axios from "axios";
+import BeaconIcon from "@/assets/beacon-icon";
+import MemberIcon from "@/assets/member-icon";
+import ContentIcon from "@/assets/content-icon";
+import HomeIcon from "@/assets/home-icon";
+import { MenuIcon } from "lucide-react";
 
 type Menu = {
   label: string;
@@ -36,12 +41,14 @@ type NavbarProps = {
   toggleSidebar: () => void;
   showBackground?: boolean;
   broken: boolean;
+  handleCollapse: () => void;
   // onLogout?: () => void;
 };
 const Navbar: FC<NavbarProps> = ({
   toggleSidebar,
   showBackground,
   broken,
+  handleCollapse,
   // onLogout,
 }) => {
   const navigate = useNavigate();
@@ -71,17 +78,19 @@ const Navbar: FC<NavbarProps> = ({
     transition-colors duration-500 flex justify-between items-center
     ${showBackground ? "bg-opacity-80" : ""}`}
     >
-      <div>
+      <div className="flex">
         {broken && (
           <button
             className="btn btn-link btn-sm text-black"
             onClick={toggleSidebar}
           >
-            {/* <MdMenu size={24} /> */}
-            toggle
+            <MenuIcon size={24} />
           </button>
         )}
-        <button className="text-[#666666] text-4xl font-bold flex items-center">
+        <button
+          onClick={handleCollapse}
+          className="ml-4 text-[#666666] text-4xl font-bold flex items-center"
+        >
           <span className="text-[#B28A4C]">HU</span>
           <span>PR</span>
           <Logo />
@@ -99,7 +108,7 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
   const TOP_OFFSET = 50;
   const [showBackground, setShowBackground] = useState(false);
   const [broken, setBroken] = useState(false);
-  const collapsed = false;
+  const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
 
   const mainRef = useRef<HTMLDivElement>(null);
@@ -127,21 +136,25 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
     {
       key: "dashboard",
       label: "หน้าแรก",
+      icon: <HomeIcon />,
     },
     {
       key: "content",
       label: "คอนเทนต์",
       path: "/content",
+      icon: <ContentIcon />,
     },
     {
       key: "beacon",
       label: "บีคอน",
       path: "/beacon",
+      icon: <BeaconIcon />,
     },
     {
       key: "member",
       label: "สมาชิก",
       path: "/member",
+      icon: <MemberIcon />,
     },
   ];
 
@@ -152,7 +165,11 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
         toggleSidebar={() => {
           setToggled(!toggled);
         }}
+        handleCollapse={() => {
+          setCollapsed(!collapsed);
+        }}
       />
+
       <div className="h-full flex relative">
         <ProSidebar
           rootStyles={{
@@ -164,11 +181,25 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
           collapsed={collapsed}
           breakPoint="md"
           backgroundColor="white"
-          onBreakPoint={setBroken}
+          onBreakPoint={(broken) => {
+            setBroken(broken);
+            setCollapsed(false);
+          }}
           width={"240px"}
         >
-          <div className="flex flex-col h-full  ">
-            <div className="h-[80px] my-1" />
+          <div className="flex flex-col h-full px-2 ">
+            <div className="h-[80px] my-1  flex items-center justify-center">
+              <button
+                onClick={() => {
+                  setToggled(false);
+                }}
+                className="text-[#666666] text-4xl font-bold flex items-center"
+              >
+                <span className="text-[#B28A4C]">HU</span>
+                <span>PR</span>
+                <Logo />
+              </button>
+            </div>
             <Menu
               menuItemStyles={{
                 root: {
@@ -177,11 +208,11 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
                   position: "relative",
                 },
                 icon: {
-                  //   color: "#19A0E4",
                   fontSize: "24px",
                 },
                 button: {
-                  margin: "4px",
+                  margin: "4px 0",
+                  padding: "12px 16px",
                   borderRadius: "8px",
                   color: "#666666",
                   transition: "ease-in-out 0.2s",
@@ -194,6 +225,13 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
                   [`&.active`]: {
                     backgroundColor: "rgba(178, 138, 76, 0.2)",
                     color: "rgba(178, 138, 76, 1)",
+                    [`& svg path`]: {
+                      stroke: "currentcolor",
+                    },
+                    "& svg#content-icon path": {
+                      fill: "currentcolor",
+                      strokeWidth: "0",
+                    },
                   },
                 },
               }}
@@ -244,6 +282,7 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
             </Menu>
           </div>
         </ProSidebar>
+
         <main
           ref={mainRef}
           className="flex-grow mt-[80px]   overflow-y-auto no-scrollbar"
