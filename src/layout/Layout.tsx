@@ -66,7 +66,7 @@ const Navbar: FC<NavbarProps> = ({
   }
   return (
     <div
-      className={`navbar fixed top-0  right-0 bg-white border-b-[1px] border-[#B28A4C] text-white h-[80px] z-50 
+      className={`navbar fixed top-0  right-0 bg-white border-b-[1px] border-[#B28A4C] text-white h-[80px] z-[30] 
     backdrop-filter backdrop-blur-lg 
     transition-colors duration-500 flex justify-between items-center
     ${showBackground ? "bg-opacity-80" : ""}`}
