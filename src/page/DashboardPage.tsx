@@ -117,7 +117,7 @@ const DashboardPage = () => {
           circleColor="bg-[#285FCA]"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="">
           <h2 className="text-xl text-[#666666] mb-2 ">กราฟ</h2>
           <div
