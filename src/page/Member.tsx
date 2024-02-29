@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { DataTable } from "./data-table";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Drawer, DrawerClose, DrawerContent } from "@/components/ui/drawer";
-import { Edit, MoreHorizontal, Plus, Trash2, X } from "lucide-react";
+import { Check, Edit, MoreHorizontal, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import axios from "axios";
@@ -35,7 +35,8 @@ import {
 
 const generateColumnDefinitions = (
   handleEdit: (member: MemberType) => void,
-  handleDelete: (member: MemberType) => void
+  handleDelete: (member: MemberType) => void,
+  handleApprove: (member: MemberType) => void
 ): ColumnDef<MemberType>[] => [
   {
     accessorKey: "avatar",
@@ -123,6 +124,7 @@ const generateColumnDefinitions = (
     accessorKey: "action",
     header: () => <div className="text-center">ดำเนินการ</div>,
     cell(props) {
+      const active = props.row.original.active;
       return (
         <div className="flex justify-center">
           <Popover>
@@ -134,16 +136,29 @@ const generateColumnDefinitions = (
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-40 space-y-2 p-1" align="end">
-              <Button
-                size={"sm"}
-                className="w-full space-x-2 flex justify-start "
-                variant={"ghost"}
-                onClick={() => {
-                  handleEdit(props.row.original);
-                }}
-              >
-                <Edit size={18} className="mr-2" /> แก้ไข
-              </Button>
+              {active ? (
+                <Button
+                  size={"sm"}
+                  className="w-full space-x-2 flex justify-start "
+                  variant={"ghost"}
+                  onClick={() => {
+                    handleEdit(props.row.original);
+                  }}
+                >
+                  <Edit size={18} className="mr-2" /> แก้ไข
+                </Button>
+              ) : (
+                <Button
+                  size={"sm"}
+                  className="w-full space-x-2 flex justify-start "
+                  variant={"ghost"}
+                  onClick={() => {
+                    handleApprove(props.row.original);
+                  }}
+                >
+                  <Check size={18} className="mr-2" /> อนุมัติ
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   handleDelete(props.row.original);
@@ -391,7 +406,7 @@ const MemberDrawer: FC<{
   );
 };
 
-const DialogDeleteMember: FC<{
+export const DialogDeleteMember: FC<{
   member: MemberType | null;
   open: boolean;
   handleClose: (open: boolean) => void;
@@ -424,16 +439,7 @@ const DialogDeleteMember: FC<{
           <p>คุณต้องการที่จะลบผู้ใช้งาน</p>
           <p>{member?.email} ใช่หรือไม่ ?</p>
         </DialogDescription>
-        <DialogFooter className="sm:justify-center gap-1">
-          <Button
-            onClick={() => {
-              handleClose(false);
-            }}
-            size={"sm"}
-            variant={"ghost"}
-          >
-            ยกเลิก
-          </Button>
+        <DialogFooter className="flex-col sm:justify-center gap-1">
           <Button
             onClick={() => {
               if (member) {
@@ -444,6 +450,77 @@ const DialogDeleteMember: FC<{
             variant="destructive"
           >
             ลบผู้ใช้งาน
+          </Button>
+          <Button
+            onClick={() => {
+              handleClose(false);
+            }}
+            size={"sm"}
+            variant={"ghost"}
+          >
+            ยกเลิก
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+const DialogApproveMember: FC<{
+  member: MemberType | null;
+  open: boolean;
+  handleClose: (open: boolean) => void;
+}> = ({ handleClose, open, member }) => {
+  const approveMember = async (memberId: string) => {
+    try {
+      const response = await axios.put(
+        `https://api-beacon.adcm.co.th/api/user/${memberId}`,
+        {
+          active: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+
+      console.log(response);
+      handleClose(false);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  return (
+    <Dialog open={open} modal onOpenChange={handleClose}>
+      <DialogContent closeButton className="text-center">
+        <DialogTitle className="text-2xl text-[#B28A4C]">
+          อนุมัติผู้ใช้งาน
+        </DialogTitle>
+        <DialogDescription className="text-base font-light">
+          <p>คุณต้องการที่จะอนุมัติผู้ใช้งาน</p>
+          <p>{member?.email} ใช่หรือไม่ ?</p>
+        </DialogDescription>
+        <DialogFooter className="flex-col sm:justify-center gap-1">
+          <Button
+            onClick={() => {
+              if (member) {
+                approveMember(member.uuid);
+              }
+            }}
+            size={"sm"}
+            className="bg-success hover:bg-success/80"
+          >
+            อนุมัติผู้ใช้งาน
+          </Button>
+          <Button
+            onClick={() => {
+              handleClose(false);
+            }}
+            size={"sm"}
+            variant={"ghost"}
+          >
+            ยกเลิก
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -465,12 +542,19 @@ const Member = () => {
   const [openDrawerMember, setOpenDrawerMember] = useState(false);
   const [openDrawerEditMember, setOpenDrawerEditMember] = useState(false);
   const [openDialogDeleteMember, setOpenDialogDeleteMember] = useState(false);
+  const [openDialogApproveMember, setOpenDialogApproveMember] = useState(false);
+
   const showEditMemberDrawer = (member: MemberType) => {
     setMemberEdit(member);
     setOpenDrawerMember(true);
   };
   const memberDeleteConfirmation = (member: MemberType) => {
     setOpenDialogDeleteMember(true);
+    setMemberEdit(member);
+  };
+
+  const memberApproveConfirmation = (member: MemberType) => {
+    setOpenDialogApproveMember(true);
     setMemberEdit(member);
   };
   const addRecord = (member: string, name: string, surename: string) => {
@@ -503,7 +587,11 @@ const Member = () => {
 
   const columns = useMemo(
     () =>
-      generateColumnDefinitions(showEditMemberDrawer, memberDeleteConfirmation),
+      generateColumnDefinitions(
+        showEditMemberDrawer,
+        memberDeleteConfirmation,
+        memberApproveConfirmation
+      ),
     []
   );
 
@@ -610,6 +698,13 @@ const Member = () => {
         open={openDialogDeleteMember}
         handleClose={(open) => {
           setOpenDialogDeleteMember(open);
+        }}
+      />
+      <DialogApproveMember
+        member={memberEdit}
+        open={openDialogApproveMember}
+        handleClose={(open) => {
+          setOpenDialogApproveMember(open);
         }}
       />
     </div>
