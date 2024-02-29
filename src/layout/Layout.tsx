@@ -13,14 +13,18 @@ import {
   Sidebar as ProSidebar,
   SubMenu,
 } from "react-pro-sidebar";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Logo from "../assets/logo";
-import axios from "axios";
 import BeaconIcon from "@/assets/beacon-icon";
 import MemberIcon from "@/assets/member-icon";
 import ContentIcon from "@/assets/content-icon";
 import HomeIcon from "@/assets/home-icon";
-import { MenuIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon } from "lucide-react";
+import { useAuth } from "@/hooks";
+import useSWR from "swr";
+import { fetcher } from "@/api";
+
+import { ProfileResponse } from "@/types/profile";
 
 type Menu = {
   label: string;
@@ -51,26 +55,12 @@ const Navbar: FC<NavbarProps> = ({
   handleCollapse,
   // onLogout,
 }) => {
-  const navigate = useNavigate();
-  async function handleConnect() {
-    try {
-      const response = await axios.post(
-        "https://api-beacon.adcm.co.th/api/auth/login",
-        {
-          email: "admin@mail.com",
-          password: "testtest",
-        }
-      );
-      localStorage.setItem(
-        "accessToken",
-        response.data.response_data.data.access_token
-      );
+  const auth = useAuth();
+  const { data } = useSWR<ProfileResponse>(
+    auth.isLogin ? `https://api-beacon.adcm.co.th/api/user/${auth.user}` : null,
+    fetcher
+  );
 
-      navigate(0);
-    } catch (err) {
-      console.log("err", err);
-    }
-  }
   return (
     <div
       className={`navbar fixed top-0  right-0 bg-white border-b-[1px] border-[#B28A4C] text-white h-[80px] z-[30] 
@@ -97,9 +87,49 @@ const Navbar: FC<NavbarProps> = ({
         </button>
       </div>
 
-      <button className="btn bg-[#B28A4C] text-white" onClick={handleConnect}>
+      {data && (
+        <div className="dropdown dropdown-bottom dropdown-end mr-5 ">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500 text-xl font-bold">
+              {data.response_data.data.first_name +
+                " " +
+                data.response_data.data.last_name}
+            </span>
+            <button className="avatar">
+              <div className="w-12 rounded-full">
+                <img src={data.response_data.data.picture} alt="profile" />
+              </div>
+            </button>
+          </div>
+
+          <ul className=" dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <li>
+              <button
+                className="bg-white text-black flex items-center 
+              hover:bg-primary               
+              hover:text-white rounded-md p-2
+              
+              "
+                onClick={() => {
+                  auth.logout();
+                }}
+              >
+                <LogOutIcon size={24} />
+                <span className="ml-2">ออกจากระบบ</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {/* <button
+        className="btn bg-[#B28A4C] text-white"
+        onClick={() => {
+          auth.logout();
+        }}
+      >
         เชื่อมต่อ
-      </button>
+      </button> */}
     </div>
   );
 };

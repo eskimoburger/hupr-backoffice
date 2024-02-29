@@ -4,6 +4,12 @@ import BeaconPage from "./page/BeaconPage";
 import DashboardPage from "./page/DashboardPage";
 import Member from "./page/Member";
 import { CreateContent, ListContent } from "./page/content";
+import LoginPage from "./page/LoginPage";
+import NotMemberPage from "./page/NotMemberPage";
+import WaitPage from "./page/WaitPage";
+import { useProvideAuth } from "./hooks";
+import { AuthContext } from "./contexts";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +22,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <DashboardPage />,
+        element: (
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "admin",
@@ -24,31 +34,64 @@ const router = createBrowserRouter([
       },
       {
         path: "beacon",
-        element: <BeaconPage />,
+        element: (
+          <ProtectedRoute>
+            <BeaconPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "content",
         children: [
           {
             path: "",
-            element: <ListContent />,
+            element: (
+              <ProtectedRoute>
+                <ListContent />
+              </ProtectedRoute>
+            ),
           },
           {
             path: "create",
-            element: <CreateContent />,
+            element: (
+              <ProtectedRoute>
+                <CreateContent />,
+              </ProtectedRoute>
+            ),
           },
         ],
       },
       {
-        path : "member",
-        element : <Member />
-      }
+        path: "member",
+        element: (
+          <ProtectedRoute>
+            <Member />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "not-member",
+        element: <NotMemberPage />,
+      },
+      {
+        path: "wait",
+        element: <WaitPage />,
+      },
     ],
+  },
+  {
+    path: "login",
+    element: <LoginPage />,
   },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  const auth = useProvideAuth();
+  return (
+    <AuthContext.Provider value={auth}>
+      <RouterProvider router={router} />
+    </AuthContext.Provider>
+  );
 }
 
 export default App;
