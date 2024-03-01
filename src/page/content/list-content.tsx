@@ -72,12 +72,12 @@ export const ListContent: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">คอนเทนต์</h1>
+        <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างสื่อ</h1>
         <button
           onClick={navigateToCreate}
           className="btn outline-none btn-sm  btn-primary text-white flex items-center"
         >
-          <Plus /> สร้างคอนเทนต์
+          <Plus /> สร้างสื่อใหม่
         </button>
       </div>
       <DataTable columns={columns} data={data?.response_data.data ?? []} />

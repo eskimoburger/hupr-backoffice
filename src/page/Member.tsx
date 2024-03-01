@@ -122,7 +122,7 @@ const generateColumnDefinitions = (
   },
   {
     accessorKey: "action",
-    header: () => <div className="text-center">ดำเนินการ</div>,
+    header: () =>  null,
     cell(props) {
       const active = props.row.original.active;
       return (

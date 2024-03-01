@@ -34,11 +34,11 @@ const SelectDevice = ({
         handleSelect?.(value);
       }}
     >
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[200px]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="0">ทั้งหมด</SelectItem>
+        <SelectItem value="0">พิกัดทั้งหมดของอุปกรณ์</SelectItem>
         {devices.map((device) => (
           <SelectItem value={device.uuid} key={device.uuid}>
             {device.name}
@@ -119,7 +119,7 @@ const DashboardPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="">
-          <h2 className="text-xl text-[#666666] mb-2 ">กราฟ</h2>
+          <h2 className="text-xl text-[#666666] mb-2 ">ภาพรวมกราฟ</h2>
           <div
             className="h-[500px] border-2 rounded-[40px] p-3 
           border-[#B28A4C] shadow-[16px_16px_20px_0px_rgba(178,138,76,0.2)]
@@ -132,7 +132,7 @@ const DashboardPage = () => {
           </div>
         </div>
         <div>
-          <h2 className="text-xl text-[#666666] mb-2 ">ผู้ใช้</h2>
+          <h2 className="text-xl text-[#666666] mb-2 ">ผู้ใช้งานล่าสุด</h2>
           <DataTable
             loading={userLoading}
             columns={columns}

@@ -170,7 +170,7 @@ export const Layout: React.FC<PropsWithChildren> = ({ children }) => {
     },
     {
       key: "content",
-      label: "คอนเทนต์",
+      label: "สร้างสื่อ",
       path: "/content",
       icon: <ContentIcon />,
     },
