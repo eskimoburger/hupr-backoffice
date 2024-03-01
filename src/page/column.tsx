@@ -24,7 +24,7 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     accessorKey: "display_name",
-    header: "ชื่อผู้ใช้",
+    header: "ชื่อผู้ใช้งาน",
   },
   {
     accessorKey: "datetime",

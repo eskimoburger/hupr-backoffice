@@ -28,9 +28,6 @@ const SummaryBox = ({
         <div className="text-[#666666] font-medium text-2xl truncate">
           {label}
         </div>
-        <div className="text-[#666666] font-extralight text-sm">
-          จากก่อนหน้า 7 วัน
-        </div>
       </div>
     </div>
   );

@@ -187,7 +187,7 @@ export const CreateContent: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างคอนเทนต์</h1>
+      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างสื่อ</h1>
       <div className=" w-full items-center gap-1.5">
         <Label htmlFor="contentName">
           <span>ชื่อคอนเทนต์</span>
