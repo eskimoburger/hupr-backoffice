@@ -411,7 +411,7 @@ const DiologDeleteDevice: FC<{
     <Dialog open={open} modal onOpenChange={handleClose} >
       <DialogContent className="text-center">
         <DialogTitle className="text-2xl text-[#B28A4C]">
-          ลบผู้ใช้งาน
+        ลบอุปกรณ์บีคอน
         </DialogTitle>
         <DialogDescription className="text-base font-light">
           <p>คุณต้องการที่จะลบอุปกรณ์บีคอน</p>
