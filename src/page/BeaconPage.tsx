@@ -34,7 +34,6 @@ const generateColumnDefinitions = (
       header: () => null,
       cell() {
         return (
-
           <div className="w-12 rounded-full ">
             <img src={Beacon} alt="Beacon" />
           </div>
@@ -94,7 +93,6 @@ const BeaconPage = () => {
   return (
     <div>
       <h1 className="text-5xl font-bold text-[#B28A4C] mb-2">บีคอน</h1>
-
       <DataTable columns={columns} data={devices?.response_data.data ?? []}
         onRowClick={(row) => {
           setDeviceEdit(row)

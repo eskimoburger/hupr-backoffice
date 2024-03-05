@@ -34,7 +34,7 @@ const SelectDevice = ({
         handleSelect?.(value);
       }}
     >
-      <SelectTrigger className="w-[200px]">
+      <SelectTrigger className="w-[200px] bg-[#B28A4C33] text-[#666666]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -86,9 +86,9 @@ const DashboardPage = () => {
 
   return (
     <div className="flex flex-col">
-      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2">ภาพรวม</h1>
+      <h1 className="text-5xl font-bold text-[#B28A4C] mb-2">หน้าหลัก</h1>
       <div className="flex justify-between items-center">
-        <h2 className="text-xl text-[#666666]">ประสิทธิภาพของเนื้อหา</h2>
+        <h2 className="text-2xl text-[#666666]">ประสิทธิภาพของเนื้อหา</h2>
         <SelectDevice
           devices={data?.response_data.data ?? []}
           handleSelect={(value) => {
@@ -99,19 +99,19 @@ const DashboardPage = () => {
 
       <div className="grid  gap-3 my-5 xl:grid-cols-3">
         <SummaryBox
-          label="จำนวนข้อความที่ส่งให้"
+          label="จำนวนข้อความที่ส่ง"
           value={overview?.response_data.data.card.message_count ?? 0}
           circleColor="bg-[#48DAA5]"
           textLabelColor="text-[#48DAA5]"
         />
         <SummaryBox
-          label="จำนวนผู้ใช้ที่ไม่ซ้ำ"
+          label="จำนวนผู้ใช้"
           value={overview?.response_data.data.card.user_count ?? 0}
           textLabelColor="text-[#EB96E7] "
           circleColor="bg-[#EB96E7]"
         />
         <SummaryBox
-          label="จำนวนผู้ใช้ที่เข้ามาใน Beacon"
+          label="จำนวนครั้งที่ผู้ใช้เข้ามาในบีคอน"
           value={overview?.response_data.data.card.visit_count ?? 0}
           textLabelColor="text-[#285FCA]"
           circleColor="bg-[#285FCA]"
@@ -119,7 +119,7 @@ const DashboardPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="">
-          <h2 className="text-xl text-[#666666] mb-2 ">ภาพรวมกราฟ</h2>
+          <h2 className="text-2xl text-[#666666] mb-2 ">ภาพรวมกราฟ</h2>
           <div
             className="h-[500px] border-2 rounded-[40px] p-3 
           border-[#B28A4C] shadow-[16px_16px_20px_0px_rgba(178,138,76,0.2)]
@@ -132,7 +132,7 @@ const DashboardPage = () => {
           </div>
         </div>
         <div>
-          <h2 className="text-xl text-[#666666] mb-2 ">ผู้ใช้งานล่าสุด</h2>
+          <h2 className="text-2xl text-[#666666] mb-2 ">ผู้ใช้งานล่าสุด</h2>
           <DataTable
             loading={userLoading}
             columns={columns}

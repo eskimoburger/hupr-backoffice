@@ -13,7 +13,7 @@ const SummaryBox = ({
 }) => {
   return (
     <div
-      className="h-36 bg-white border-2 border-[#B28A4C] rounded-lg 
+      className="h-44 bg-white border-2 border-[#B28A4C] rounded-lg 
       shadow-[16px_16px_20px_0px_rgba(178,138,76,0.2)] p-4 flex flex-col justify-between gap-2"
     >
       <div className="flex justify-between items-center">
