@@ -60,6 +60,7 @@ const Navbar: FC<NavbarProps> = ({
     auth.isLogin ? `https://api-beacon.adcm.co.th/api/user/${auth.user}` : null,
     fetcher
   );
+  
 
   return (
     <div

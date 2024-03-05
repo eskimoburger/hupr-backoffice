@@ -34,8 +34,8 @@ const generateColumnDefinitions = (
       header: () => null,
       cell() {
         return (
-          <div className="avatar">
-            <div className="w-12 rounded-full ">
+          <div className="">
+            <div className="w-12 rounded-full">
               <img src={Beacon} alt="Beacon" />
             </div>
           </div>
@@ -44,7 +44,7 @@ const generateColumnDefinitions = (
     },
     {
       accessorKey: "hw_id",
-      header: "รหัสอุปกรณ์",
+      header: "HWID",
     },
     {
       accessorKey: "name",
@@ -119,7 +119,7 @@ const BeaconPage = () => {
     <div>
       <h1 className="text-3xl font-bold text-[#B28A4C] mb-2">บีคอน</h1>
 
-      <DataTable columns={columns} data={devices?.response_data.data ?? []} />
+      <DataTable  columns={columns} data={devices?.response_data.data ?? []} />
       <DeviceDrawer
         device={deviceEdit}
         open={openDrawerDevice}
@@ -411,7 +411,7 @@ const DiologDeleteDevice: FC<{
     <Dialog open={open} modal onOpenChange={handleClose} >
       <DialogContent className="text-center">
         <DialogTitle className="text-2xl text-[#B28A4C]">
-        ลบอุปกรณ์บีคอน
+          ลบอุปกรณ์บีคอน
         </DialogTitle>
         <DialogDescription className="text-base font-light">
           <p>คุณต้องการที่จะลบอุปกรณ์บีคอน</p>
