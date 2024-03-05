@@ -22,16 +22,8 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import GroupPerson from "@/assets/group-person";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const generateColumnDefinitions = (
   handleEdit: (member: MemberType) => void,
@@ -107,11 +99,11 @@ const generateColumnDefinitions = (
         <div className="flex justify-center ">
           <div className="text-sm ">
             {props.row.original.active ? (
-              <div className=" bg-[#EBF4E4] w-[120px] text-[#97B67F] rounded-full text-center">
+              <div className=" bg-[#EBF4E4]  px-4 py-1.5 text-[#97B67F] rounded-xl text-center">
                 ใช้งานอยู่
               </div>
             ) : (
-              <div className=" bg-[#5BC4FF33] w-[120px] text-[#5BC4FF] rounded-full text-center">
+              <div className=" bg-[#5BC4FF33] px-4 py-1.5  text-[#5BC4FF] rounded-xl text-center">
                 รออนุมัติ
               </div>
             )}
@@ -139,7 +131,7 @@ const generateColumnDefinitions = (
               {active ? (
                 <Button
                   size={"sm"}
-                  className="w-full space-x-2 flex justify-start "
+                  className="w-full space-x-2 flex justify-start hover:bg-[#B28A4C26]"
                   variant={"ghost"}
                   onClick={() => {
                     handleEdit(props.row.original);
@@ -150,7 +142,7 @@ const generateColumnDefinitions = (
               ) : (
                 <Button
                   size={"sm"}
-                  className="w-full space-x-2 flex justify-start "
+                  className="w-full space-x-2 flex justify-start hover:bg-[#B28A4C26]"
                   variant={"ghost"}
                   onClick={() => {
                     handleApprove(props.row.original);
@@ -164,7 +156,7 @@ const generateColumnDefinitions = (
                   handleDelete(props.row.original);
                 }}
                 size={"sm"}
-                className="w-full flex justify-start text-error hover:text-error"
+                className="w-full flex justify-start text-error bg-white hover:text-error hover:bg-[#B28A4C26]"
                 variant={"ghost"}
               >
                 <Trash2 size={18} className="mr-2" /> ลบ
@@ -277,26 +269,7 @@ const MemberDrawerEdit: FC<{
                 }}
               />
             </div>
-            <div className="form-control gap-2">
-              <Label htmlFor="status">
-                <span>สถานะ</span>
-              </Label>
-              <Select
-                value={memberActive ? "approve" : "notApprove"}
-                onValueChange={(value) => {
-                  setMemberActive(value === "approve");
-                  setIsEdit(true);
-                }}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={"notApprove"}>ไม่อนุมัติ</SelectItem>
-                  <SelectItem value={"approve"}>ใช้งานอยู่</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      
 
             {isEdit && (
               <div className="grid grid-cols-2 gap-6 mx-3">
@@ -370,7 +343,6 @@ const MemberDrawer: FC<{
           <div className="my-14" />
           <div className="flex flex-col gap-4  w-full">
             <div className="flex items-center ">
-              <GroupPerson />
               <div className="ml-10 ">
                 <div className="font-bold text-xl text-[#666666]">ชื่อ</div>
                 <div className="text-normal font-extralight">{memberName}</div>
@@ -378,7 +350,6 @@ const MemberDrawer: FC<{
             </div>
             <hr />
             <div className="flex items-center ">
-              <GroupPerson />
               <div className="ml-10 ">
                 <div className="font-bold text-xl text-[#666666]">นามสกุล</div>
                 <div className="text-normal font-extralight">
@@ -605,9 +576,9 @@ const Member = () => {
               document.getElementById("createmember") as HTMLDialogElement
             )?.showModal()
           }
-          className="btn outline-none btn-sm  btn-primary text-white flex items-center"
+          className="btn outline-none btn-xl  btn-primary text-white flex items-center justify-center"
         >
-          <Plus /> เพิ่มผู้ใช้
+          <Plus size={18} /> เพิ่มผู้ใช้
         </button>
         <dialog id="createmember" className="modal">
           <div className="modal-box">
@@ -621,7 +592,7 @@ const Member = () => {
             </h3>
             <div className="flex flex-col gap-4 mt-4 w-full ">
               <div>
-                อีเมล :{" "}
+                อีเมล {" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกอีเมล"
@@ -634,7 +605,7 @@ const Member = () => {
               </div>
 
               <div>
-                ชื่อ :{" "}
+                ชื่อ {" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกชื่อ"
@@ -647,7 +618,7 @@ const Member = () => {
               </div>
 
               <div>
-                นามสกุล :{" "}
+                นามสกุล {" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกนามสกุล"
@@ -662,7 +633,7 @@ const Member = () => {
 
             <div className="modal-action">
               <button
-                className="btn text-[#FFFFFF] bg-[#B28A4C]"
+                className="btn btn-sm px-16 text-[#FFFFFF] bg-[#B28A4C]  "
                 onClick={() => {
                   addRecord(memberEmail, memberName, memberSurename);
                 }}
