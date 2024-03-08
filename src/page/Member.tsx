@@ -569,14 +569,14 @@ const Member = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <h1 className="text-3xl font-bold text-[#B28A4C] mb-2">สมาชิก</h1>
+        <h1 className="text-5xl font-bold text-[#B28A4C] mb-2">สมาชิก</h1>
         <button
           onClick={() =>
             (
               document.getElementById("createmember") as HTMLDialogElement
             )?.showModal()
           }
-          className="btn outline-none btn-xl  btn-primary text-white flex items-center justify-center"
+          className="btn outline-none btn-sm  btn-primary text-white flex items-center"
         >
           <Plus size={18} /> เพิ่มผู้ใช้
         </button>
