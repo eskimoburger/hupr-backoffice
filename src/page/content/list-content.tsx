@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const columns: ColumnDef<BeaconData>[] = [
+const generateColumnDefinitions = (
+  handleEdit: (beacon: BeaconData) => void
+): ColumnDef<BeaconData>[] => [
   {
     accessorKey: "campaign_name",
     header: "ชื่อแคมเปญ",
@@ -57,6 +59,26 @@ const columns: ColumnDef<BeaconData>[] = [
       }),
     header: "สิ้นสุด",
   },
+  {
+    accessorKey: "action",
+    header: () => (
+      <div className="text-center">
+        <h1>การดำเนินการ</h1>
+      </div>
+    ),
+    cell(props) {
+      return (
+        <div className="flex justify-center">
+          <button
+            onClick={() => handleEdit(props.row.original)}
+            className="btn btn-sm btn-primary text-white"
+          >
+            แก้ไข
+          </button>
+        </div>
+      );
+    },
+  },
 ];
 
 export const ListContent: React.FC = () => {
@@ -69,6 +91,9 @@ export const ListContent: React.FC = () => {
   const navigateToCreate = () => {
     navigate("/content/create");
   };
+  const columns = generateColumnDefinitions((beacon) => {
+    navigate(`/content/edit/${beacon.uuid}`);
+  });
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
