@@ -58,8 +58,11 @@ const DialogNotMember: FC<{
 const DialogRegister: FC<{
   open: boolean;
   handleClose: (open: boolean) => void;
-  picture?: string;
-}> = ({ handleClose, open, picture }) => {
+  profile?: {
+    displayName: string;
+    pictureUrl: string;
+  };
+}> = ({ handleClose, open, profile }) => {
   const navigate = useNavigate();
   const nameRef = useRef<HTMLInputElement>(null);
   const surnameRef = useRef<HTMLInputElement>(null);
@@ -67,12 +70,14 @@ const DialogRegister: FC<{
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
       const res = await axios.post(`https://api-beacon.adcm.co.th/api/user`, {
         first_name: nameRef.current?.value,
         last_name: surnameRef.current?.value,
         email: emailRef.current?.value,
-        picture,
+        picture: profile?.pictureUrl,
+        line_name: profile?.displayName,
         role: "admin",
         department_uuid: "dffdedd0-cbd4-11ee-8557-07e6505aa0d7",
       });
@@ -162,6 +167,7 @@ const NotMemberPage = () => {
       await liff.init({ liffId: import.meta.env.VITE_LIFF_ID });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
+        console.log(profile);
 
         setProfile(
           profile as {
@@ -197,7 +203,7 @@ const NotMemberPage = () => {
         }}
       />
       <DialogRegister
-        picture={profile?.pictureUrl}
+        profile={profile ?? undefined}
         open={openDialogRegister}
         handleClose={(open) => {
           setOpenDialogRegister(open);
