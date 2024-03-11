@@ -91,9 +91,7 @@ const Navbar: FC<NavbarProps> = ({
         <div className="dropdown dropdown-bottom dropdown-end mr-5 ">
           <div className="flex items-center gap-2">
             <span className="text-slate-500 text-xl font-bold">
-              {data.response_data.data.first_name +
-                " " +
-                data.response_data.data.last_name}
+              {data.response_data.data.line_name}
             </span>
             <button className="avatar">
               <div className="w-12 rounded-full">
@@ -121,15 +119,6 @@ const Navbar: FC<NavbarProps> = ({
           </ul>
         </div>
       )}
-
-      {/* <button
-        className="btn bg-[#B28A4C] text-white"
-        onClick={() => {
-          auth.logout();
-        }}
-      >
-        เชื่อมต่อ
-      </button> */}
     </div>
   );
 };
