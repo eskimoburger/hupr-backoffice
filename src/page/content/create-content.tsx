@@ -12,19 +12,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { ResponseDevice } from "@/types/device";
-import { FancyMultiSelect } from "@/components/MutiSelect";
+import { FancyMultiSelect, Framework } from "@/components/MutiSelect";
+import { Checkbox } from "@/components/ui/checkbox";
 
-const SelectFrequency = ({
+import { Plus } from "lucide-react";
+
+export const contentOptions = [
+  {
+    value: "text",
+    label: "ข้อความ",
+  },
+  {
+    value: "image",
+    label: "รูปภาพ",
+  },
+  {
+    value: "video",
+    label: "วิดีโอ",
+  },
+  {
+    value: "template",
+    label: "ลิงค์",
+  },
+];
+export interface Content {
+  type: "text" | "image" | "video" | "template";
+  text?: string;
+  originalContentUrl?: string;
+  previewImageUrl?: string;
+  altText?: string;
+  template?: {
+    type: string;
+    columns: {
+      imageUrl: string;
+      action: {
+        type: string;
+        uri: string;
+      };
+    }[];
+  };
+}
+
+export const SelectFrequency = ({
+  value,
   frequencies,
   handleSelect,
 }: {
+  value?: string;
   frequencies: FrequencyItem[];
   handleSelect?: (value: string) => void;
 }) => {
   const [selected, setSelected] = useState("");
+
+  useEffect(() => {
+    setSelected(value ?? "");
+  }, [value]);
 
   return (
     <Select
@@ -50,41 +95,136 @@ const SelectFrequency = ({
 };
 
 export const CreateContent: React.FC = () => {
+  const contentNameRef = useRef<HTMLInputElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const startTimeRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
+  const endTimeRef = useRef<HTMLInputElement>(null);
+  const [checkValue, setCheckValue] = useState("Always");
+  const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
+  const [frequency, setFrequency] = useState("");
+
+  const [checkedAllDevices, setCheckedAllDevices] = useState(false);
   const { data: frequencies } = useSWR<ResponseFrequency>(
     "https://api-beacon.adcm.co.th/api/receiving_freq",
     fetcher
   );
   const { data: devices } = useSWR<ResponseDevice>(
     "https://api-beacon.adcm.co.th/api/device?limit=9999",
-    fetcher
+    fetcher,
+    {}
   );
 
-  console.log(devices);
-  const [contentType, setContentType] = useState("text");
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
-  const inputImageRef = useRef<HTMLInputElement>(null);
-  const inputVideoRef = useRef<HTMLInputElement>(null);
-  const contentOptions = [
-    {
-      value: "text",
-      label: "ข้อความ",
-    },
-    {
-      value: "image",
-      label: "รูปภาพ",
-    },
-    {
-      value: "video",
-      label: "วิดีโอ",
-    },
-    {
-      value: "link",
-      label: "ลิงค์",
-    },
-  ];
+  const modifiedDevices = devices
+    ? devices.response_data.data.map((device) => ({
+        label: device.name,
+        value: device.uuid,
+      }))
+    : [];
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCreateContent = async () => {
+    const campaign_name = contentNameRef.current?.value;
+    const startDate = startDateRef.current?.value;
+    const startTime = startTimeRef.current?.value;
+    const endDate = endDateRef.current?.value;
+    const endTime = endTimeRef.current?.value;
+    const messageCondition = contentTypes.map((content) => {
+      switch (content.type) {
+        case "text":
+          return {
+            type: content.type,
+            text: content.text,
+          };
+        case "image":
+        case "video":
+          return {
+            type: content.type,
+            originalContentUrl: content.originalContentUrl,
+            previewImageUrl: content.previewImageUrl,
+          };
+        case "template":
+          return {
+            type: content.type,
+            altText: content.altText,
+            template: content.template,
+          };
+      }
+    });
+
+    console.log({
+      campaign_name,
+      start_datetime: `${startDate}T${startTime}`,
+      end_datetime: `${endDate}T${endTime}`,
+      recieving_freq_uuid: frequency,
+      beacon_action: "enter",
+      device_uuid: selectedDevices,
+      message: messageCondition,
+    });
+
+    const response = await axios.post(
+      "https://api-beacon.adcm.co.th/api/message",
+      {
+        campaign_name,
+        start_datetime: `${startDate}T${startTime}`,
+        end_datetime: `${endDate}T${endTime}`,
+        recieving_freq_uuid: frequency,
+        beacon_action: "enter",
+        device_uuid: selectedDevices,
+        message: messageCondition,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    console.log(response);
+  };
+
+  const handleSelectedChange = React.useCallback((selected: Framework[]) => {
+    setSelectedDevices(selected.map((device) => device.value));
+  }, []);
+
+  const [contentTypes, setContentTypes] = useState<Content[]>([
+    {
+      type: "text",
+    },
+  ]);
+
+  const setContentTypeAtIndex = (index: number, type: Content["type"]) => {
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].type = type;
+
+      if (type === "text") {
+        newContentTypes[index].text = "";
+      } else if (type === "image" || type === "video") {
+        newContentTypes[index].originalContentUrl = "";
+        newContentTypes[index].previewImageUrl = "";
+      } else if (type === "template") {
+        newContentTypes[index].template = {
+          type: "image_carousel",
+          columns: [
+            {
+              imageUrl: "",
+              action: {
+                type: "uri",
+                uri: "",
+              },
+            },
+          ],
+        };
+      }
+
+      return newContentTypes;
+    });
+  };
+
+  const handleImageUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (!file) return;
     const formData = new FormData();
@@ -93,11 +233,20 @@ export const CreateContent: React.FC = () => {
       "https://api-beacon.adcm.co.th/api/media/upload",
       formData
     );
-    console.log(response.data.response_data.data.original);
-    setImageSrc(baseURL + response.data.response_data.data.original);
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].originalContentUrl =
+        baseURL + response.data.response_data.data.original;
+      newContentTypes[index].previewImageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (!file) return;
     const formData = new FormData();
@@ -106,22 +255,37 @@ export const CreateContent: React.FC = () => {
       "https://api-beacon.adcm.co.th/api/media/upload",
       formData
     );
-    console.log(response.data.response_data.data.original);
-    setVideoSrc(baseURL + response.data.response_data.data.original);
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].originalContentUrl =
+        baseURL + response.data.response_data.data.original;
+      newContentTypes[index].previewImageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
   };
 
-  const renderValueContent = (value: string) => {
-    switch (value) {
+  const renderValueContentNew = (index: number) => {
+    const value = contentTypes[index];
+    switch (value.type) {
       case "text":
         return (
           <div className=" w-full  items-center gap-1.5 mt-2">
-            <Label htmlFor="message" className="text-base">
+            <Label htmlFor={`message-${index}`} className="text-base">
               <span>ข้อความ</span>
             </Label>
             <Textarea
+              value={value.text}
+              onChange={(e) => {
+                setContentTypes((prevContentTypes) => {
+                  const newContentTypes = [...prevContentTypes];
+                  newContentTypes[index].text = e.target.value;
+                  return newContentTypes;
+                });
+              }}
               className="active:outline-none"
               placeholder="พิมพ์ข้อความของคุณที่นี่"
-              id="message"
+              id={`message-${index}`}
               rows={6}
             />
           </div>
@@ -129,19 +293,20 @@ export const CreateContent: React.FC = () => {
       case "image":
         return (
           <div className=" w-full  items-center gap-1.5 mt-2">
-            <Label htmlFor="uploadImage" className="text-base">
+            <Label htmlFor={`uploadImage-${index}`} className="text-base">
               <span>อัปโหลดรูปภาพของคุณ</span>
             </Label>
             <Input
-              ref={inputImageRef}
-              onChange={handleImageUpload}
+              onChange={(e) => {
+                handleImageUploadAtIndex(index, e);
+              }}
               type="file"
-              id="uploadImage"
+              id={`uploadImage-${index}`}
               accept="image/*"
             />
-            {imageSrc && (
+            {value.originalContentUrl && (
               <img
-                src={imageSrc}
+                src={value.originalContentUrl}
                 alt="preview"
                 className="w-32 h-32 mt-2 rounded-md"
               />
@@ -151,75 +316,182 @@ export const CreateContent: React.FC = () => {
       case "video":
         return (
           <div className=" w-full  items-center gap-1.5 mt-2">
-            <Label htmlFor="video" className="text-base">
+            <Label htmlFor={`video-${index}`} className="text-base">
               <span>อัปโหลดวิดีโอของคุณ</span>
             </Label>
             <Input
-              ref={inputVideoRef}
+              onChange={(e) => {
+                handleVideoUploadAtIndex(index, e);
+              }}
               type="file"
-              id="video"
+              id={`video-${index}`}
               accept="video/mp4"
-              onChange={handleVideoUpload}
             />
-            {videoSrc && (
+            {value.originalContentUrl && (
               <video controls className="w-32 h-32 mt-2 rounded-md">
-                <source src={videoSrc} type="video/mp4" />
+                <source src={value.originalContentUrl} type="video/mp4" />
                 <track kind="captions" />
               </video>
             )}
           </div>
         );
 
-      case "link":
-        return "ลิงค์";
+      case "template":
+        return (
+          <div className=" w-full  items-center gap-1.5 mt-2">
+            <Label htmlFor={`uploadImage-${index}`} className="text-base">
+              <span>อัปโหลดรูปภาพของคุณ</span>
+            </Label>
+            <Input
+              onChange={(e) => {
+                handleImageUploadAtIndex(index, e);
+              }}
+              type="file"
+              id={`uploadImage-${index}`}
+              accept="image/*"
+            />
+            {value.originalContentUrl && (
+              <img
+                src={value.originalContentUrl}
+                alt="preview"
+                className="w-32 h-32 mt-2 rounded-md"
+              />
+            )}
+          </div>
+        );
       default:
         return "ข้อความ";
     }
   };
 
-  useEffect(() => {
-    // clear value in input when change content type
-    if (inputImageRef.current) inputImageRef.current.value = "";
-    if (inputVideoRef.current) inputVideoRef.current.value = "";
-    setImageSrc(null);
-    setVideoSrc(null);
-  }, [contentType]);
+  console.log(contentTypes);
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างสื่อ</h1>
+      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างสื่อใหม่</h1>
       <div className=" w-full items-center gap-1.5">
         <Label htmlFor="contentName">
-          <span>ชื่อคอนเทนต์</span>
+          <span>ชื่อสื่อที่จะสร้าง</span>
         </Label>
-        <Input type="text" id="contentName" placeholder=" ชื่อคอนเทนต์" />
+        <Input
+          ref={contentNameRef}
+          type="text"
+          id="contentName"
+          placeholder=" ชื่อคอนเทนต์"
+        />
       </div>
       <div className="my-2" />
       <Label htmlFor="contentDescription" className="">
-        <span>คำอธิบาย</span>
+        <span>ข้อความ</span>
       </Label>
-      {/* <h1 className="">ข้อความ</h1> */}
-      <div className="mt-2 bg-[#B28A4C33] p-4 rounded-md grid grid-cols-2 gap-2">
-        <div>
-          <RadioGroup
-            name="content-type"
-            options={contentOptions}
-            onChange={(value) => setContentType(value)}
-            selectedValue={contentType}
-          />
-          {renderValueContent(contentType)}
+
+      {contentTypes.map((_, index) => (
+        <div
+          key={index}
+          className="mt-2 bg-[#B28A4C33] p-4 rounded-md grid grid-cols-2 gap-6 "
+        >
+          <div>
+            <RadioGroup
+              name={`content-type-${index}`}
+              options={contentOptions}
+              onChange={(value) => {
+                const contentType = value as
+                  | "text"
+                  | "image"
+                  | "video"
+                  | "template";
+                setContentTypeAtIndex(index, contentType);
+              }}
+              selectedValue={contentTypes[index].type}
+            />
+            {renderValueContentNew(index)}
+            <div className="flex justify-end mt-1">
+              <button
+                disabled={contentTypes.length <= 1}
+                onClick={() => {
+                  setContentTypes((prevContentTypes) => {
+                    const newContentTypes = [...prevContentTypes];
+                    newContentTypes.splice(index, 1);
+                    return newContentTypes;
+                  });
+                }}
+                className="btn btn-error w-[120px] btn-sm text-base text-white mt-2 flex items-center justify-center"
+              >
+                ลบ
+              </button>
+            </div>
+          </div>
+          {contentTypes[index].type === "template" && (
+            <div className="self-center">
+              <Label htmlFor="altText">
+                <span>ข้อความแนบลิงค์</span>
+              </Label>
+              <Input
+                value={contentTypes[index]?.altText ?? ""}
+                onChange={(e) => {
+                  setContentTypes((prevContentTypes) => {
+                    const newContentTypes = [...prevContentTypes];
+                    newContentTypes[index].altText = e.target.value;
+                    return newContentTypes;
+                  });
+                }}
+                type="text"
+                id="altText"
+                placeholder=" ข้อความแนบลิงค์"
+              />
+              <Label htmlFor="link">
+                <span>ลิงค์</span>
+              </Label>
+              <Input
+                value={
+                  contentTypes[index]?.template?.columns?.[0]?.action?.uri ?? ""
+                }
+                type="text"
+                id={`link-${index}`}
+                placeholder=" ลิงค์"
+                onChange={(e) => {
+                  setContentTypes((prevContentTypes) => {
+                    const newContentTypes = [...prevContentTypes];
+                    newContentTypes[index].template!.columns[0].action.uri =
+                      e.target.value;
+                    return newContentTypes;
+                  });
+                }}
+              />
+            </div>
+          )}
         </div>
-      </div>
+      ))}
+      <button
+        disabled={contentTypes.length >= 5}
+        onClick={() => {
+          setContentTypes((prevContentTypes) => [
+            ...prevContentTypes,
+            { type: "text" },
+          ]);
+        }}
+        className="btn btn-primary w-[120px] btn-sm text-base text-white mt-2 flex items-center justify-center"
+      >
+        <Plus size={18} /> เพิ่ม
+      </button>
+
       <div className="my-2" />
       <Label htmlFor="contentPeriod">
-        <span>ระยะเวลาเนื้อหา</span>
+        <span>ระยะเวลาที่ต้องการส่ง</span>
       </Label>
       <div className="grid grid-cols-2 gap-4 mt-2">
         <fieldset>
           <legend className="text-sm">วันที่เริ่มต้น</legend>
           <input
+            ref={startDateRef}
+            onFocus={() => {
+              if (startDateRef.current) startDateRef.current.type = "date";
+            }}
+            onBlur={() => {
+              if (startDateRef.current) startDateRef.current.type = "text";
+            }}
             className="input input-bordered input-sm  w-full"
-            type="date"
+            type="text"
             min={new Date().toISOString().split("T")[0]}
             placeholder="เลือกวันที่เริ่มต้น"
           />
@@ -227,23 +499,47 @@ export const CreateContent: React.FC = () => {
         <fieldset>
           <legend className="text-sm">เวลาที่เริ่มต้น</legend>
           <input
+            ref={startTimeRef}
+            onFocus={() => {
+              if (startTimeRef.current) startTimeRef.current.type = "time";
+            }}
+            onBlur={() => {
+              if (startTimeRef.current) startTimeRef.current.type = "text";
+            }}
             className="input input-bordered input-sm  w-full"
-            type="time"
+            placeholder="เลือกเวลาที่เริ่มต้น"
+            type="text"
           />
         </fieldset>
         <fieldset>
           <legend className="text-sm">วันที่สิ้นสุด</legend>
           <input
+            onFocus={() => {
+              if (endDateRef.current) endDateRef.current.type = "date";
+            }}
+            onBlur={() => {
+              if (endDateRef.current) endDateRef.current.type = "text";
+            }}
+            placeholder="เลือกวันที่สิ้นสุด"
+            ref={endDateRef}
             className="input input-bordered input-sm  w-full"
-            type="date"
+            type="text"
             min={new Date().toISOString().split("T")[0]}
           />
         </fieldset>
         <fieldset>
           <legend className="text-sm">เวลาที่สิ้นสุด</legend>
           <input
+            onFocus={() => {
+              if (endTimeRef.current) endTimeRef.current.type = "time";
+            }}
+            onBlur={() => {
+              if (endTimeRef.current) endTimeRef.current.type = "text";
+            }}
+            placeholder="เลือกเวลาที่สิ้นสุด"
+            ref={endTimeRef}
             className="input input-bordered input-sm  w-full"
-            type="time"
+            type="text"
           />
         </fieldset>
         <div className=" flex gap-2">
@@ -253,11 +549,12 @@ export const CreateContent: React.FC = () => {
               type="radio"
               id="always"
               name="period"
-              value="always"
-              checked
+              value="Always"
+              checked={checkValue === "Always"}
+              onChange={() => setCheckValue("Always")}
             />
             <label className="label-text" htmlFor="always">
-              Always
+              สม่ำเสมอ
             </label>
           </div>
           <div className="flex items-center gap-4">
@@ -266,11 +563,12 @@ export const CreateContent: React.FC = () => {
               type="radio"
               id="specific"
               name="period"
+              checked={checkValue === "Specific Time"}
               value="Specific Time"
-              checked
+              onChange={() => setCheckValue("Specific Time")}
             />
             <label className="label-text" htmlFor="specific">
-              Specific Time
+              เฉพาะช่วง
             </label>
           </div>
         </div>
@@ -282,7 +580,7 @@ export const CreateContent: React.FC = () => {
           <SelectFrequency
             frequencies={frequencies?.response_data.data ?? []}
             handleSelect={(value) => {
-              console.log(value);
+              setFrequency(value);
             }}
           />
         </div>
@@ -291,9 +589,39 @@ export const CreateContent: React.FC = () => {
           <Label className="label-text">
             <span>เลือกสถานที่</span>
           </Label>
-          <FancyMultiSelect />
+
+          <FancyMultiSelect
+            options={modifiedDevices}
+            selectedAll={checkedAllDevices}
+            onSelectedChange={handleSelectedChange}
+          />
+        </div>
+        <div>
+          <Label className="label-text">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="all-devices"
+                onCheckedChange={(checked) => {
+                  setCheckedAllDevices(checked as boolean);
+                }}
+              />
+              <label
+                htmlFor="all-devices"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                อุปกรณ์ทุกตัว
+              </label>
+            </div>
+          </Label>
         </div>
       </div>
+      <br />
+      <button
+        onClick={handleCreateContent}
+        className="btn outline-none btn-sm  btn-primary text-white flex items-center"
+      >
+        เริ่มสร้าง
+      </button>
     </div>
   );
 };
