@@ -27,6 +27,8 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
         return <Image size={32} className="w-12 h-12 mx-auto mb-2" />;
       case "video":
         return <PlaySquare className="w-12 h-12 mx-auto mb-2" />;
+      case "template":
+        return <Link size={32} className="w-12 h-12 mx-auto mb-2" />;
       default:
         return <Link size={32} className="w-12 h-12 mx-auto mb-2" />;
     }
