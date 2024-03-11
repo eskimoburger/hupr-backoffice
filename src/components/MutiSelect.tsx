@@ -7,47 +7,52 @@ import { Badge } from "@/components/ui/badge";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type Framework = Record<"value" | "label", string>;
+export type Framework = Record<"value" | "label", string>;
 
-const FRAMEWORKS = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-  {
-    value: "wordpress",
-    label: "WordPress",
-  },
-  {
-    value: "express.js",
-    label: "Express.js",
-  },
-  {
-    value: "nest.js",
-    label: "Nest.js",
-  },
-] satisfies Framework[];
+// const FRAMEWORKS = [
+//   {
+//     value: "next.js",
+//     label: "Next.js",
+//   },
+//   {
+//     value: "sveltekit",
+//     label: "SvelteKit",
+//   },
+//   {
+//     value: "nuxt.js",
+//     label: "Nuxt.js",
+//   },
+//   {
+//     value: "remix",
+//     label: "Remix",
+//   },
+//   {
+//     value: "astro",
+//     label: "Astro",
+//   },
+//   {
+//     value: "wordpress",
+//     label: "WordPress",
+//   },
+//   {
+//     value: "express.js",
+//     label: "Express.js",
+//   },
+//   {
+//     value: "nest.js",
+//     label: "Nest.js",
+//   },
+// ] satisfies Framework[];
 
-export function FancyMultiSelect() {
+export const FancyMultiSelect: React.FC<{
+  options: Framework[];
+  selectedAll?: boolean;
+  value?: string[];
+  onSelectedChange: (selected: Framework[]) => void;
+}> = React.memo(({ options, selectedAll, onSelectedChange, value }) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<Framework[]>([FRAMEWORKS[4]]);
+  const [selected, setSelected] = React.useState<Framework[]>([]);
   const [inputValue, setInputValue] = React.useState("");
 
   const handleUnselect = React.useCallback((framework: Framework) => {
@@ -76,9 +81,33 @@ export function FancyMultiSelect() {
     []
   );
 
-  const selectables = FRAMEWORKS.filter(
-    (framework) => !selected.includes(framework)
-  );
+  const selectables = React.useMemo(() => {
+    return options.filter(
+      (option) =>
+        !selected.some((selectedItem) => selectedItem.value === option.value)
+    );
+  }, [options, selected]);
+
+  React.useEffect(() => {
+    onSelectedChange(selected);
+  }, [selected, onSelectedChange]);
+
+  React.useEffect(() => {
+    if (selectedAll && JSON.stringify(selected) !== JSON.stringify(options)) {
+      setSelected(options);
+    } else if (
+      !selectedAll &&
+      JSON.stringify(selected) === JSON.stringify(options)
+    ) {
+      setSelected([]);
+    }
+  }, [selectedAll, options, selected, value]);
+
+  React.useEffect(() => {
+    if (value) {
+      console.log("value", value);
+    }
+  }, [value, options]);
 
   return (
     <Command
@@ -92,6 +121,7 @@ export function FancyMultiSelect() {
               <Badge key={framework.value} variant="secondary">
                 {framework.label}
                 <button
+                  disabled={selected.length === options.length}
                   className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -116,7 +146,13 @@ export function FancyMultiSelect() {
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder="Select frameworks..."
+            placeholder={
+              selected.length === 0
+                ? "กรุณาเลือกอย่างน้อย 1 ตัวเลือก"
+                : selected.length === options.length
+                ? undefined
+                : "เลือกเพิ่มเติม"
+            }
             className="ml-2 bg-transparent outline-none placeholder:text-muted-foreground flex-1"
           />
         </div>
@@ -149,4 +185,4 @@ export function FancyMultiSelect() {
       </div>
     </Command>
   );
-}
+});
