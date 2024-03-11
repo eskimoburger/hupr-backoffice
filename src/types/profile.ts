@@ -1,4 +1,5 @@
 type UserData = {
+  line_name: string;
   uuid: string;
   email: string;
   password: string;
