@@ -12,7 +12,7 @@ const DialogWaitingActive: FC<{
   const navigate = useNavigate();
   return (
     <Dialog open={open} modal onOpenChange={handleClose}>
-      <DialogContent className="text-center">
+      <DialogContent className="text-center ">
         <div className="grid place-items-center">
           <SandWatch />
         </div>
@@ -22,7 +22,7 @@ const DialogWaitingActive: FC<{
         <p className="text-base font-light ">
           ข้อมูลของคุณกำลังดำเนินการรอตรวจสอบ
         </p>
-        <p className="text-base font-light  leading-[2px]">
+        <p className="text-base font-light   text-wrap">
           และรออนุมัติจากแอดมิน เพื่อเข้าถึงข้อมูลหน้าเว็บได้
         </p>
 
