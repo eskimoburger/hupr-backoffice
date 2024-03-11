@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 
 const ProtectedRoute: FC<PropsWithChildren> = ({ children }) => {
   const { isLogin, user } = useAuth();
-  //condition have user and islogin
+
   if (isLogin && user) {
     return <>{children}</>;
   } else {
