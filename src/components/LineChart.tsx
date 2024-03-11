@@ -34,7 +34,7 @@ const LineChart: FC<ChartProps> = ({ data, isLoading }) => {
     labels: data.map((item) => item.date),
     datasets: [
       {
-        label: `${"จำนวนข้อความที่ส่ง"} (${"คน"})`,
+        label: `${"ข้อความเป็น จำนวนข้อความที่ส่ง "} (${"ครั้ง"})`,
         data: data.map((item) => (item.message_count ? item.message_count : 0)),
         borderColor: "#48DAA5",
         backgroundColor: "#48DAA5",
@@ -43,7 +43,7 @@ const LineChart: FC<ChartProps> = ({ data, isLoading }) => {
         borderWidth: 4,
       },
       {
-        label: `${"จำนวนผู้ใช้ที่ไม่ซ้ำ"} (${"ครั้ง"})`,
+        label: `${"จำนวนผู้ใช้"} (${"คน"})`,
         data: data.map((item) => (item.user_count ? item.user_count : 0)),
         borderColor: "#EB96E7",
         backgroundColor: "#EB96E7",
@@ -52,7 +52,7 @@ const LineChart: FC<ChartProps> = ({ data, isLoading }) => {
         borderWidth: 4,
       },
       {
-        label: `${"จำนวนผู้ใช้ที่เข้ามาใน Beaco"} (${"คน"})`,
+        label: `${"จำนวนครั้งที่ผู้ใช้เข้ามาในบีคอน"} (${"ครั้ง"})`,
         data: data.map((item) => (item.visit_count ? item.visit_count : 0)),
         borderColor: "#285FCA",
         backgroundColor: "#285FCA",

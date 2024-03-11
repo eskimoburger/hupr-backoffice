@@ -12,10 +12,11 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
 } from "@/components/ui/drawer";
 
 import { Button } from "@/components/ui/button";
-import { Save, Trash2, X, MoreHorizontal, Edit } from "lucide-react";
+import { Save, Trash2, X, Edit } from "lucide-react";
 import { MapPin } from 'lucide-react';
 import axios from "axios";
 import {
@@ -27,24 +28,22 @@ import {
 } from "@/components/ui/dialog";
 
 const generateColumnDefinitions = (
-  handleEdit: (device: Device) => void,
 ): ColumnDef<Device>[] => [
     {
       accessorKey: "avatar",
       header: () => null,
       cell() {
         return (
-          <div className="avatar">
-            <div className="w-12 rounded-full ">
-              <img src={Beacon} alt="Beacon" />
-            </div>
+          <div className="w-12 rounded-full ">
+            <img src={Beacon} alt="Beacon" />
           </div>
+
         );
       },
     },
     {
       accessorKey: "hw_id",
-      header: "รหัสอุปกรณ์",
+      header: "HWID",
     },
     {
       accessorKey: "name",
@@ -64,23 +63,6 @@ const generateColumnDefinitions = (
         });
       },
     },
-    {
-      accessorKey: "action",
-      header: () => null,
-      cell(props) {
-        return (
-          <div className="flex space-x-2 justify-center">
-            <Button onClick={() => {
-              handleEdit(props.row.original);
-            }} className="rounded-full w-8 h-8  bg-[#B28A4C] hover:bg-[#B28A4C]/80 text-red-500 hover:text-white">
-              <span>
-                <MoreHorizontal color="white" size={16} />
-              </span>
-            </Button>
-          </div>
-        );
-      },
-    },
   ];
 
 const BeaconPage = () => {
@@ -90,12 +72,6 @@ const BeaconPage = () => {
   const [openDrawerDevice, setOpenDrawerDevice] = useState(false);
   const [openDrawerEditDevice, setOpenDrawerEditDevice] = useState(false);
   const [openDrawerDeleteDevice, setOpenDrawerDeleteDevice] = useState(false);
-
-  const showEditDeviceDrawer = (device: Device) => {
-    setDeviceEdit(device);
-    setOpenDrawerDevice(true);
-  }
-
 
   const { data: devices } = useSWR<ResponseDevice>(
     `https://api-beacon.adcm.co.th/api/device?limit=10&page=${currentPage}`,
@@ -111,15 +87,17 @@ const BeaconPage = () => {
   const columns = useMemo(
     () =>
       generateColumnDefinitions(
-        showEditDeviceDrawer,
       ),
     []
   );
   return (
     <div>
-      <h1 className="text-3xl font-bold text-[#B28A4C] mb-2">บีคอน</h1>
-
-      <DataTable columns={columns} data={devices?.response_data.data ?? []} />
+      <h1 className="text-5xl font-bold text-[#B28A4C] mb-2">บีคอน</h1>
+      <DataTable columns={columns} data={devices?.response_data.data ?? []}
+        onRowClick={(row) => {
+          setDeviceEdit(row)
+          setOpenDrawerDevice(true)
+        }} />
       <DeviceDrawer
         device={deviceEdit}
         open={openDrawerDevice}
@@ -183,8 +161,10 @@ const DeviceDrawer: FC<{
   }
 
   return (
-    <Drawer open={open} onOpenChange={handleClose} direction="right" >
-      <DrawerContent className="top-0 right-0 left-auto mt-0 w-[500px]  rounded-none  ">
+    <Drawer 
+    open={open} onOpenChange={handleClose} direction="right">
+    
+      <DrawerContent className="top-0 right-0 left-auto mt-0 w-[400px]  rounded-none  ">
         <div className="mx-auto w-full p-5 overflow-y-auto overflow-x-hidden h-screen ">
           <div className="flex items-center justify-between ">
             <div>
@@ -227,7 +207,7 @@ const DeviceDrawer: FC<{
               </div>
 
             </div>
-
+            <hr />
             <div className="flex items-center justify-between mt-4 gap-2">
               <Button
                 onClick={handleOpenDelect} size={"sm"}
@@ -304,6 +284,7 @@ const DeviceDrawerEdit: FC<{
     return null;
   }
   return (
+    
     <Drawer
       open={open}
       onOpenChange={handleClose}
@@ -314,7 +295,10 @@ const DeviceDrawerEdit: FC<{
       }
       }
     >
-      <DrawerContent className="top-0 right-0 left-auto mt-0 w-[500px]  rounded-none  ">
+      <DrawerHeader>
+     
+      </DrawerHeader>
+      <DrawerContent className="top-0 right-0 left-auto mt-0 w-[400px]  rounded-none  ">
         <div className="mx-auto w-full p-5 overflow-y-auto overflow-x-hidden h-screen ">
           <div className="flex items-center justify-between ">
             <div>
@@ -340,6 +324,7 @@ const DeviceDrawerEdit: FC<{
               <X size={18} />
             </DrawerClose>
           </div>
+          
           <div>
             <input
               type="text"
@@ -408,10 +393,10 @@ const DiologDeleteDevice: FC<{
       })
   }
   return (
-    <Dialog open={open} modal onOpenChange={handleClose} >
-      <DialogContent className="text-center">
+    <Dialog open={open} modal onOpenChange={handleClose}>
+      <DialogContent className="text-center max-w-xl h-[250px]" closeButton>
         <DialogTitle className="text-2xl text-[#B28A4C]">
-        ลบอุปกรณ์บีคอน
+          ลบอุปกรณ์บีคอน
         </DialogTitle>
         <DialogDescription className="text-base font-light">
           <p>คุณต้องการที่จะลบอุปกรณ์บีคอน</p>
@@ -424,7 +409,7 @@ const DiologDeleteDevice: FC<{
                 delectRecord(device);
               }
             }}
-            size={"sm"}
+            size={"lg"}
             variant="destructive"
           >
             ลบอุปกรณ์
@@ -433,8 +418,8 @@ const DiologDeleteDevice: FC<{
             onClick={() => {
               handleClose(false);
             }}
-            size={"sm"}
-            variant={"ghost"}
+            size={"lg"}
+            className="bg-[#A1A1A1] hover:bg-[#00000026]"
           >
             ยกเลิก
           </Button>
