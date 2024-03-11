@@ -3,7 +3,7 @@ import { Layout } from "./layout/Layout";
 import BeaconPage from "./page/BeaconPage";
 import DashboardPage from "./page/DashboardPage";
 import Member from "./page/Member";
-import { CreateContent, ListContent } from "./page/content";
+import { CreateContent, EditContent, ListContent } from "./page/content";
 import LoginPage from "./page/LoginPage";
 import NotMemberPage from "./page/NotMemberPage";
 import WaitPage from "./page/WaitPage";
@@ -55,7 +55,15 @@ const router = createBrowserRouter([
             path: "create",
             element: (
               <ProtectedRoute>
-                <CreateContent />,
+                <CreateContent />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "edit/:id",
+            element: (
+              <ProtectedRoute>
+                <EditContent />
               </ProtectedRoute>
             ),
           },
