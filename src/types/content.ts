@@ -5,13 +5,31 @@ export interface ResponseContent {
   response_time: string;
 }
 
+export interface ResponseContents {
+  response_code: number;
+  response_detail: string;
+  response_data: ResponseDatum;
+  response_time: string;
+}
+
 export interface ResponseData {
   status: number;
   type: string;
-  data: Data;
+  data: ContentData;
+}
+export interface ResponseDatum {
+  status: number;
+  type: string;
+  data: ContentData[];
+  pagination: {
+    all_rows: number;
+    all_pages: number;
+    page_limit: number;
+    page_number: number;
+  };
 }
 
-export interface Data {
+export interface ContentData {
   uuid: string;
   campaign_name: string;
   message: Message[];
