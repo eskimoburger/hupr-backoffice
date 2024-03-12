@@ -60,10 +60,12 @@ export const SelectFrequency = ({
   value,
   frequencies,
   handleSelect,
+  isDisabled,
 }: {
   value?: string;
   frequencies: FrequencyItem[];
   handleSelect?: (value: string) => void;
+  isDisabled?: boolean;
 }) => {
   const [selected, setSelected] = useState("");
 
@@ -73,13 +75,17 @@ export const SelectFrequency = ({
 
   return (
     <Select
+      disabled={isDisabled}
       value={selected}
       onValueChange={(value) => {
         setSelected(value);
         handleSelect?.(value);
       }}
     >
-      <SelectTrigger className="">
+      <SelectTrigger
+        className="
+       disabled:border-gray-300 disabled:text-black disabled:opacity-100"
+      >
         <SelectValue placeholder="เลือกความถี่" />
       </SelectTrigger>
       <SelectContent>
