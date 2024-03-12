@@ -25,7 +25,7 @@ export const fetcher = async (url: string) => {
   }
 };
 
-async function refreshTokensAndRetry(url: string) {
+export async function refreshTokensAndRetry(url: string) {
   const refreshToken = localStorage.getItem("refreshToken");
   if (refreshToken) {
     const response = await axios.get(`${baseURL}/auth/refresh`, {
