@@ -96,15 +96,75 @@ const EditContent = () => {
           }
         })
       );
-
-      // console.log(data.response_data.data.message);
     }
   }, [data]);
 
+  const handleImageUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("media", file as Blob);
+    const response = await axios.post(
+      "https://api-beacon.adcm.co.th/api/media/upload",
+      formData
+    );
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].originalContentUrl =
+        baseURL + response.data.response_data.data.original;
+      newContentTypes[index].previewImageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
+  };
+
+  const handleVideoUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("media", file as Blob);
+    const response = await axios.post(
+      "https://api-beacon.adcm.co.th/api/media/upload",
+      formData
+    );
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].originalContentUrl =
+        baseURL + response.data.response_data.data.original;
+      newContentTypes[index].previewImageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
+  };
+
+  const handleTemplateUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("media", file as Blob);
+    const response = await axios.post(
+      "https://api-beacon.adcm.co.th/api/media/upload",
+      formData
+    );
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].template!.columns[0].imageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
+  };
+
   const renderValueContentNew = (index: number) => {
     const value = contentTypes[index];
-
-    console.log(value);
     switch (value.type) {
       case "text":
         return (
@@ -135,8 +195,8 @@ const EditContent = () => {
               <span>อัปโหลดรูปภาพของคุณ</span>
             </Label>
             <Input
-              onChange={() => {
-                // handleImageUploadAtIndex(index, e);
+              onChange={(e) => {
+                handleImageUploadAtIndex(index, e);
               }}
               type="file"
               id={`uploadImage-${index}`}
@@ -158,8 +218,8 @@ const EditContent = () => {
               <span>อัปโหลดวิดีโอของคุณ</span>
             </Label>
             <Input
-              onChange={() => {
-                // handleVideoUploadAtIndex(index, e);
+              onChange={(e) => {
+                handleVideoUploadAtIndex(index, e);
               }}
               type="file"
               id={`video-${index}`}
@@ -181,16 +241,16 @@ const EditContent = () => {
               <span>อัปโหลดรูปภาพของคุณ</span>
             </Label>
             <Input
-              onChange={() => {
-                // handleImageUploadAtIndex(index, e);
+              onChange={(e) => {
+                handleTemplateUploadAtIndex(index, e);
               }}
               type="file"
               id={`uploadImage-${index}`}
               accept="image/*"
             />
-            {value.originalContentUrl && (
+            {value.template?.columns?.[0]?.imageUrl && (
               <img
-                src={value.originalContentUrl}
+                src={value.template?.columns?.[0]?.imageUrl}
                 alt="preview"
                 className="w-32 h-32 mt-2 rounded-md"
               />
