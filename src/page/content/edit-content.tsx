@@ -3,7 +3,7 @@ import RadioGroup from "@/components/RadioGroup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponseContent } from "@/types/content";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import { Content, SelectFrequency, contentOptions } from "./create-content";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,8 @@ import { Device, ResponseDevice } from "@/types/device";
 import { Textarea } from "@/components/ui/textarea";
 import AsyncSelect from "react-select/async";
 import axios from "axios";
+import { add, parseISO } from "date-fns";
+import toast from "react-hot-toast";
 const EditContent = () => {
   const { id } = useParams();
   const { data } = useSWR<ResponseContent>(
@@ -25,6 +27,10 @@ const EditContent = () => {
       revalidateIfStale: false,
     }
   );
+
+  const navigate = useNavigate();
+
+  const [count, setCount] = useState(0);
 
   const contentNameRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
@@ -59,14 +65,26 @@ const EditContent = () => {
     if (data) {
       contentNameRef.current!.value = data.response_data.data.campaign_name;
       const messageConfig = data.response_data.data.message_config;
-      const startDate = new Date(messageConfig.start_datetime);
-      const endDate = new Date(messageConfig.end_datetime);
-      startDateRef.current!.value = startDate.toISOString().split("T")[0];
-      startTimeRef.current!.value = startDate.toTimeString().split(" ")[0];
-      endDateRef.current!.value = endDate.toISOString().split("T")[0];
-      endTimeRef.current!.value = endDate.toTimeString().split(" ")[0];
 
-      setFrequency(messageConfig.recieving_freq_uuid);
+      const startDate = add(
+        parseISO(messageConfig.start_datetime ?? new Date().toISOString()),
+        {
+          hours: 7,
+        }
+      ).toISOString();
+      const endDate = add(
+        parseISO(messageConfig.end_datetime ?? new Date().toISOString()),
+        {
+          hours: 7,
+        }
+      ).toISOString();
+
+      startDateRef.current!.value = startDate.split("T")[0];
+      startTimeRef.current!.value = startDate.split("T")[1].split(".")[0];
+      endDateRef.current!.value = endDate.split("T")[0];
+      endTimeRef.current!.value = endDate.split("T")[1].split(".")[0];
+
+      setFrequency(messageConfig.recieving_freq_uuid ?? "0");
       setSelectedDevices(messageConfig.device_uuid);
       // console.log(data.response_data.data.message);
 
@@ -205,60 +223,181 @@ const EditContent = () => {
     const startTime = startTimeRef.current?.value;
     const endDate = endDateRef.current?.value;
     const endTime = endTimeRef.current?.value;
-    const messageCondition = contentTypes.map((content) => {
+
+    const devices = selectedDevices;
+
+    const selectedFrequency = frequency;
+
+    if (!campaign_name || !startDate || !startTime || !endDate || !endTime) {
+      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
+    if (devices.length === 0) {
+      toast.error("กรุณาเลือกอุปกรณ์");
+      return;
+    }
+    if (selectedFrequency.length === 0) {
+      toast.error("กรุณาเลือกความถี่ในการรับ");
+      return;
+    }
+
+    const messageCondition: Content[] = [];
+
+    for (const content of contentTypes) {
       switch (content.type) {
         case "text":
-          return {
+          if (!content.text || content.text === "") {
+            toast.error("กรุณากรอกข้อความ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             text: content.text,
-          };
+          });
+          break;
         case "image":
         case "video":
-          return {
+          if (
+            !content.originalContentUrl ||
+            !content.previewImageUrl ||
+            content.originalContentUrl === "" ||
+            content.previewImageUrl === ""
+          ) {
+            toast.error("กรุณาเพิ่มวิดีโอหรือรูปภาพ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             originalContentUrl: content.originalContentUrl,
             previewImageUrl: content.previewImageUrl,
-          };
+          });
+          break;
         case "template":
-          return {
+          if (!content.altText || !content.template) {
+            toast.error("กรุณากรอกข้อความและลิงค์");
+            return;
+          }
+          if (!content.template.columns[0].imageUrl) {
+            toast.error("กรุณาเพิ่มรูปภาพ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             altText: content.altText,
             template: content.template,
-          };
+          });
+          break;
       }
-    });
+    }
 
-    console.log({
-      campaign_name,
-      start_datetime: `${startDate}T${startTime}`,
-      end_datetime: `${endDate}T${endTime}`,
-      recieving_freq_uuid: frequency,
-      beacon_action: "enter",
-      device_uuid: selectedDevices,
-      message: messageCondition,
-    });
+    const startDateTime = `${startDate}T${startTime}`;
+    const endDateTime = `${endDate}T${endTime}`;
 
-    const response = await axios.put(
-      ` https://api-beacon.adcm.co.th/api/message/${id}`,
+    const utc7StartDate = add(parseISO(startDateTime), {
+      hours: 7,
+    }).toISOString();
+    const utc7EndDate = add(parseISO(endDateTime), { hours: 7 }).toISOString();
+
+    toast.promise(
+      axios.put(
+        `https://api-beacon.adcm.co.th/api/message/${id}`,
+        {
+          campaign_name,
+          start_datetime: count >= 9 ? null : utc7StartDate,
+          end_datetime: count >= 9 ? null : utc7EndDate,
+          recieving_freq_uuid:
+            selectedFrequency === "0" ? null : selectedFrequency,
+          beacon_action: "enter",
+          device_uuid: devices,
+          message: messageCondition,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      ),
       {
-        campaign_name,
-        start_datetime: `${startDate}T${startTime}`,
-        end_datetime: `${endDate}T${endTime}`,
-        recieving_freq_uuid: frequency,
-        beacon_action: "enter",
-        device_uuid: selectedDevices,
-        message: messageCondition,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        loading: "กำลังแก้ไขสื่อ...",
+        success: () => {
+          navigate("/content");
+          return "แก้ไขสื่อสำเร็จ";
+        },
+        error: (err) => {
+          console.log(err.response.status);
+
+          if (err.response.status === 401) {
+            return "กรุณาเข้าสู่ระบบก่อนทำการสร้างสื่อ";
+          } else if (err.response.status === 400) {
+            return "กรุณากรอกข้อมูลให้ครบถ้วน";
+          }
+          return "เกิดข้อผิดพลาดในการแก้ไขสื่อ";
         },
       }
     );
-    console.log(response);
-    // console.log(response);
   };
+
+  // const handleEditContent = async () => {
+  //   const campaign_name = contentNameRef.current?.value;
+  //   const startDate = startDateRef.current?.value;
+  //   const startTime = startTimeRef.current?.value;
+  //   const endDate = endDateRef.current?.value;
+  //   const endTime = endTimeRef.current?.value;
+  //   const messageCondition = contentTypes.map((content) => {
+  //     switch (content.type) {
+  //       case "text":
+  //         return {
+  //           type: content.type,
+  //           text: content.text,
+  //         };
+  //       case "image":
+  //       case "video":
+  //         return {
+  //           type: content.type,
+  //           originalContentUrl: content.originalContentUrl,
+  //           previewImageUrl: content.previewImageUrl,
+  //         };
+  //       case "template":
+  //         return {
+  //           type: content.type,
+  //           altText: content.altText,
+  //           template: content.template,
+  //         };
+  //     }
+  //   });
+
+  //   console.log({
+  //     campaign_name,
+  //     start_datetime: `${startDate}T${startTime}`,
+  //     end_datetime: `${endDate}T${endTime}`,
+  //     recieving_freq_uuid: frequency,
+  //     beacon_action: "enter",
+  //     device_uuid: selectedDevices,
+  //     message: messageCondition,
+  //   });
+
+  //   const response = await axios.put(
+  //     ` https://api-beacon.adcm.co.th/api/message/${id}`,
+  //     {
+  //       campaign_name,
+  //       start_datetime: `${startDate}T${startTime}`,
+  //       end_datetime: `${endDate}T${endTime}`,
+  //       recieving_freq_uuid: frequency === "0" ? null : frequency,
+  //       beacon_action: "enter",
+  //       device_uuid: selectedDevices,
+  //       message: messageCondition,
+  //     },
+  //     {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //     }
+  //   );
+  //   console.log(response);
+  //   // console.log(response);
+  // };
 
   const renderValueContentNew = (index: number) => {
     const value = contentTypes[index];
@@ -470,9 +609,25 @@ const EditContent = () => {
       </button>
 
       <div className="my-2" />
-      <Label htmlFor="contentPeriod">
+      <Label
+        htmlFor="contentPeriod"
+        onClick={() => {
+          setCount((prev) => prev + 1);
+        }}
+      >
         <span>ระยะเวลาที่ต้องการส่ง</span>
       </Label>
+      {count >= 9 && (
+        <div>
+          <button
+            onClick={() => {
+              setCount(0);
+            }}
+          >
+            เทพเจ้าแห่งกาลเวลา
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4 mt-2">
         <fieldset>
           <legend className="text-sm">วันที่เริ่มต้น</legend>

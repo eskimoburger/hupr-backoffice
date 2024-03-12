@@ -13,6 +13,7 @@ import { Device, ResponseDevice } from "@/types/device";
 import { Textarea } from "@/components/ui/textarea";
 import AsyncSelect from "react-select/async";
 import axios from "axios";
+import { add, parseISO } from "date-fns";
 
 const ContentDetail = () => {
   const { id } = useParams();
@@ -57,12 +58,23 @@ const ContentDetail = () => {
     if (data) {
       contentNameRef.current!.value = data.response_data.data.campaign_name;
       const messageConfig = data.response_data.data.message_config;
-      const startDate = new Date(messageConfig.start_datetime);
-      const endDate = new Date(messageConfig.end_datetime);
-      startDateRef.current!.value = startDate.toISOString().split("T")[0];
-      startTimeRef.current!.value = startDate.toTimeString().split(" ")[0];
-      endDateRef.current!.value = endDate.toISOString().split("T")[0];
-      endTimeRef.current!.value = endDate.toTimeString().split(" ")[0];
+      const startDate = add(
+        parseISO(messageConfig.start_datetime ?? new Date().toISOString()),
+        {
+          hours: 7,
+        }
+      ).toISOString();
+      const endDate = add(
+        parseISO(messageConfig.end_datetime ?? new Date().toISOString()),
+        {
+          hours: 7,
+        }
+      ).toISOString();
+
+      startDateRef.current!.value = startDate.split("T")[0];
+      startTimeRef.current!.value = startDate.split("T")[1].split(".")[0];
+      endDateRef.current!.value = endDate.split("T")[0];
+      endTimeRef.current!.value = endDate.split("T")[1].split(".")[0];
 
       const messages = data.response_data.data.message;
       setFrequency(messageConfig.recieving_freq_uuid);

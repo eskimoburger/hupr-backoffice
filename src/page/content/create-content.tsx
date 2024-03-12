@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { add, parseISO } from "date-fns";
 
 export const contentOptions = [
   {
@@ -91,7 +92,7 @@ export const SelectFrequency = ({
         <SelectValue placeholder="เลือกความถี่" />
       </SelectTrigger>
       <SelectContent>
-        {/* <SelectItem value="0">ทั้งหมด</SelectItem> */}
+        <SelectItem value="0">ทดสอบ</SelectItem>
         {frequencies.map((frequency) => (
           <SelectItem value={frequency.uuid} key={frequency.uuid}>
             {frequency.name}
@@ -111,7 +112,7 @@ export const CreateContent: React.FC = () => {
   const endTimeRef = useRef<HTMLInputElement>(null);
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   const [frequency, setFrequency] = useState("");
-
+  const [count, setCount] = useState(0);
   const [checkedAllDevices, setCheckedAllDevices] = useState(false);
   const { data: frequencies } = useSWR<ResponseFrequency>(
     "https://api-beacon.adcm.co.th/api/receiving_freq",
@@ -140,29 +141,6 @@ export const CreateContent: React.FC = () => {
     const devices = selectedDevices;
 
     const selectedFrequency = frequency;
-
-    // const messageCondition = contentTypes.map((content) => {
-    //   switch (content.type) {
-    //     case "text":
-    //       return {
-    //         type: content.type,
-    //         text: content.text,
-    //       };
-    //     case "image":
-    //     case "video":
-    //       return {
-    //         type: content.type,
-    //         originalContentUrl: content.originalContentUrl,
-    //         previewImageUrl: content.previewImageUrl,
-    //       };
-    //     case "template":
-    //       return {
-    //         type: content.type,
-    //         altText: content.altText,
-    //         template: content.template,
-    //       };
-    //   }
-    // });
 
     if (!campaign_name || !startDate || !startTime || !endDate || !endTime) {
       toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
@@ -226,14 +204,23 @@ export const CreateContent: React.FC = () => {
       }
     }
 
+    const startDateTime = `${startDate}T${startTime}`;
+    const endDateTime = `${endDate}T${endTime}`;
+
+    const utc7StartDate = add(parseISO(startDateTime), {
+      hours: 7,
+    }).toISOString();
+    const utc7EndDate = add(parseISO(endDateTime), { hours: 7 }).toISOString();
+
     toast.promise(
       axios.post(
         "https://api-beacon.adcm.co.th/api/message",
         {
           campaign_name,
-          start_datetime: `${startDate}T${startTime}`,
-          end_datetime: `${endDate}T${endTime}`,
-          recieving_freq_uuid: selectedFrequency,
+          start_datetime: count >= 9 ? null : utc7StartDate,
+          end_datetime: count >= 9 ? null : utc7EndDate,
+          recieving_freq_uuid:
+            selectedFrequency === "0" ? null : selectedFrequency,
           beacon_action: "enter",
           device_uuid: devices,
           message: messageCondition,
@@ -486,7 +473,6 @@ export const CreateContent: React.FC = () => {
       <Label htmlFor="contentDescription" className="">
         <span>ข้อความ</span>
       </Label>
-
       {contentTypes.map((_, index) => (
         <div
           key={index}
@@ -576,11 +562,26 @@ export const CreateContent: React.FC = () => {
       >
         <Plus size={18} /> เพิ่ม
       </button>
-
       <div className="my-2" />
-      <Label htmlFor="contentPeriod">
+      <Label
+        htmlFor="contentPeriod"
+        onClick={() => {
+          setCount((prev) => prev + 1);
+        }}
+      >
         <span>ระยะเวลาที่ต้องการส่ง</span>
       </Label>
+      {count >= 9 && (
+        <div>
+          <button
+            onClick={() => {
+              setCount(0);
+            }}
+          >
+            เทพเจ้าแห่งกาลเวลา
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4 mt-2">
         <fieldset>
           <legend className="text-sm">วันที่เริ่มต้น</legend>
