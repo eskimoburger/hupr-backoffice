@@ -63,10 +63,16 @@ const ContentDetail = () => {
       startTimeRef.current!.value = startDate.toTimeString().split(" ")[0];
       endDateRef.current!.value = endDate.toISOString().split("T")[0];
       endTimeRef.current!.value = endDate.toTimeString().split(" ")[0];
+
+      const messages = data.response_data.data.message;
       setFrequency(messageConfig.recieving_freq_uuid);
       setSelectedDevices(messageConfig.device_uuid);
       setContentTypes(
-        data.response_data.data.message.map((message) => {
+        messages.map((message) => {
+          if (!message) {
+            return { type: "text", text: "" };
+          }
+
           if (message.type === "text") {
             return { type: "text", text: message.text };
           } else if (message.type === "image") {

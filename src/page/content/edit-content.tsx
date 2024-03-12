@@ -17,22 +17,24 @@ import AsyncSelect from "react-select/async";
 import axios from "axios";
 const EditContent = () => {
   const { id } = useParams();
-  const { data } = useSWR<ResponseContent>(`${baseURL}/message/${id}`, {
+  const { data } = useSWR<ResponseContent>(
+    id ? `${baseURL}/message/${id}` : null,
     fetcher,
-  });
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+    }
+  );
 
   const contentNameRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
   const endTimeRef = useRef<HTMLInputElement>(null);
-  const [checkValue, setCheckValue] = useState("Always");
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   const [frequency, setFrequency] = useState("");
   const [contentTypes, setContentTypes] = useState<Content[]>([
-    {
-      type: "text",
-    },
+    { type: "text" },
   ]);
   const [, setCheckedAllDevices] = useState(false);
   const { data: frequencies } = useSWR<ResponseFrequency>(
@@ -53,9 +55,6 @@ const EditContent = () => {
         }))
       : [];
   }, [devices]);
-
-  console.log(modifiedDevices);
-
   useEffect(() => {
     if (data) {
       contentNameRef.current!.value = data.response_data.data.campaign_name;
@@ -66,13 +65,16 @@ const EditContent = () => {
       startTimeRef.current!.value = startDate.toTimeString().split(" ")[0];
       endDateRef.current!.value = endDate.toISOString().split("T")[0];
       endTimeRef.current!.value = endDate.toTimeString().split(" ")[0];
-      setCheckValue(messageConfig.cron === null ? "Specific Time" : "Always");
+
       setFrequency(messageConfig.recieving_freq_uuid);
       setSelectedDevices(messageConfig.device_uuid);
-      console.log(data.response_data.data.message);
+      // console.log(data.response_data.data.message);
 
       setContentTypes(
         data.response_data.data.message.map((message) => {
+          if (!message) {
+            return { type: "text", text: "" };
+          }
           if (message.type === "text") {
             return { type: "text", text: message.text };
           } else if (message.type === "image") {
@@ -162,9 +164,105 @@ const EditContent = () => {
       return newContentTypes;
     });
   };
+  const setContentTypeAtIndex = (index: number, type: Content["type"]) => {
+    if (index < 0 || index >= contentTypes.length) {
+      console.error("Index out of bounds");
+      return;
+    }
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].type = type;
+      if (type === "text") {
+        newContentTypes[index].text = "";
+      } else if (type === "image") {
+        newContentTypes[index].originalContentUrl = "";
+        newContentTypes[index].previewImageUrl = "";
+      } else if (type === "video") {
+        newContentTypes[index].originalContentUrl = "";
+        newContentTypes[index].previewImageUrl = "";
+      } else if (type === "template") {
+        newContentTypes[index].template = {
+          type: "image_carousel",
+          columns: [
+            {
+              imageUrl: "",
+              action: {
+                type: "uri",
+                uri: "",
+              },
+            },
+          ],
+        };
+      }
+
+      return newContentTypes;
+    });
+  };
+
+  const handleEditContent = async () => {
+    const campaign_name = contentNameRef.current?.value;
+    const startDate = startDateRef.current?.value;
+    const startTime = startTimeRef.current?.value;
+    const endDate = endDateRef.current?.value;
+    const endTime = endTimeRef.current?.value;
+    const messageCondition = contentTypes.map((content) => {
+      switch (content.type) {
+        case "text":
+          return {
+            type: content.type,
+            text: content.text,
+          };
+        case "image":
+        case "video":
+          return {
+            type: content.type,
+            originalContentUrl: content.originalContentUrl,
+            previewImageUrl: content.previewImageUrl,
+          };
+        case "template":
+          return {
+            type: content.type,
+            altText: content.altText,
+            template: content.template,
+          };
+      }
+    });
+
+    console.log({
+      campaign_name,
+      start_datetime: `${startDate}T${startTime}`,
+      end_datetime: `${endDate}T${endTime}`,
+      recieving_freq_uuid: frequency,
+      beacon_action: "enter",
+      device_uuid: selectedDevices,
+      message: messageCondition,
+    });
+
+    const response = await axios.put(
+      ` https://api-beacon.adcm.co.th/api/message/${id}`,
+      {
+        campaign_name,
+        start_datetime: `${startDate}T${startTime}`,
+        end_datetime: `${endDate}T${endTime}`,
+        recieving_freq_uuid: frequency,
+        beacon_action: "enter",
+        device_uuid: selectedDevices,
+        message: messageCondition,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    console.log(response);
+    // console.log(response);
+  };
 
   const renderValueContentNew = (index: number) => {
     const value = contentTypes[index];
+
     switch (value.type) {
       case "text":
         return (
@@ -262,35 +360,6 @@ const EditContent = () => {
     }
   };
 
-  const setContentTypeAtIndex = (index: number, type: Content["type"]) => {
-    setContentTypes((prevContentTypes) => {
-      const newContentTypes = [...prevContentTypes];
-      newContentTypes[index].type = type;
-
-      if (type === "text") {
-        newContentTypes[index].text = "";
-      } else if (type === "image" || type === "video") {
-        newContentTypes[index].originalContentUrl = "";
-        newContentTypes[index].previewImageUrl = "";
-      } else if (type === "template") {
-        newContentTypes[index].template = {
-          type: "image_carousel",
-          columns: [
-            {
-              imageUrl: "",
-              action: {
-                type: "uri",
-                uri: "",
-              },
-            },
-          ],
-        };
-      }
-
-      return newContentTypes;
-    });
-  };
-
   return (
     <div>
       <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">แก้ไขสื่อ</h1>
@@ -310,7 +379,7 @@ const EditContent = () => {
         <span>ข้อความ</span>
       </Label>
 
-      {contentTypes.map((_, index) => (
+      {contentTypes.map((content, index) => (
         <div
           key={index}
           className="mt-2 bg-[#B28A4C33] p-4 rounded-md grid grid-cols-2 gap-6 "
@@ -467,36 +536,8 @@ const EditContent = () => {
             type="text"
           />
         </fieldset>
-        <div className=" flex gap-2">
-          <div className="flex items-center gap-2">
-            <input
-              className="radio radio-primary radio-sm"
-              type="radio"
-              id="always"
-              name="period"
-              value="Always"
-              checked={checkValue === "Always"}
-              onChange={() => setCheckValue("Always")}
-            />
-            <label className="label-text" htmlFor="always">
-              สม่ำเสมอ
-            </label>
-          </div>
-          <div className="flex items-center gap-4">
-            <input
-              className="radio radio-primary radio-sm"
-              type="radio"
-              id="specific"
-              name="period"
-              checked={checkValue === "Specific Time"}
-              value="Specific Time"
-              onChange={() => setCheckValue("Specific Time")}
-            />
-            <label className="label-text" htmlFor="specific">
-              เฉพาะช่วง
-            </label>
-          </div>
-        </div>
+
+        <div />
         <div />
         <div>
           <Label className="label-text">
@@ -575,7 +616,7 @@ const EditContent = () => {
       </div>
       <br />
       <button
-        // onClick={handleCreateContent}
+        onClick={handleEditContent}
         className="btn outline-none btn-sm  btn-primary text-white flex items-center"
       >
         บันทึก

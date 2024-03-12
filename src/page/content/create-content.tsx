@@ -19,6 +19,8 @@ import { FancyMultiSelect, Framework } from "@/components/MutiSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { Plus } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export const contentOptions = [
   {
@@ -101,6 +103,7 @@ export const SelectFrequency = ({
 };
 
 export const CreateContent: React.FC = () => {
+  const navigate = useNavigate();
   const contentNameRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<HTMLInputElement>(null);
@@ -133,58 +136,133 @@ export const CreateContent: React.FC = () => {
     const startTime = startTimeRef.current?.value;
     const endDate = endDateRef.current?.value;
     const endTime = endTimeRef.current?.value;
-    const messageCondition = contentTypes.map((content) => {
+
+    const devices = selectedDevices;
+
+    const selectedFrequency = frequency;
+
+    // const messageCondition = contentTypes.map((content) => {
+    //   switch (content.type) {
+    //     case "text":
+    //       return {
+    //         type: content.type,
+    //         text: content.text,
+    //       };
+    //     case "image":
+    //     case "video":
+    //       return {
+    //         type: content.type,
+    //         originalContentUrl: content.originalContentUrl,
+    //         previewImageUrl: content.previewImageUrl,
+    //       };
+    //     case "template":
+    //       return {
+    //         type: content.type,
+    //         altText: content.altText,
+    //         template: content.template,
+    //       };
+    //   }
+    // });
+
+    if (!campaign_name || !startDate || !startTime || !endDate || !endTime) {
+      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
+    if (devices.length === 0) {
+      toast.error("กรุณาเลือกอุปกรณ์");
+      return;
+    }
+    if (selectedFrequency.length === 0) {
+      toast.error("กรุณาเลือกความถี่ในการรับ");
+      return;
+    }
+
+    const messageCondition: Content[] = [];
+
+    for (const content of contentTypes) {
       switch (content.type) {
         case "text":
-          return {
+          if (!content.text || content.text === "") {
+            toast.error("กรุณากรอกข้อความ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             text: content.text,
-          };
+          });
+          break;
         case "image":
         case "video":
-          return {
+          if (
+            !content.originalContentUrl ||
+            !content.previewImageUrl ||
+            content.originalContentUrl === "" ||
+            content.previewImageUrl === ""
+          ) {
+            toast.error("กรุณาเพิ่มวิดีโอหรือรูปภาพ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             originalContentUrl: content.originalContentUrl,
             previewImageUrl: content.previewImageUrl,
-          };
+          });
+          break;
         case "template":
-          return {
+          if (!content.altText || !content.template) {
+            toast.error("กรุณากรอกข้อความและลิงค์");
+            return;
+          }
+          if (!content.template.columns[0].imageUrl) {
+            toast.error("กรุณาเพิ่มรูปภาพ");
+            return;
+          }
+          messageCondition.push({
             type: content.type,
             altText: content.altText,
             template: content.template,
-          };
+          });
+          break;
       }
-    });
+    }
 
-    console.log({
-      campaign_name,
-      start_datetime: `${startDate}T${startTime}`,
-      end_datetime: `${endDate}T${endTime}`,
-      recieving_freq_uuid: frequency,
-      beacon_action: "enter",
-      device_uuid: selectedDevices,
-      message: messageCondition,
-    });
+    toast.promise(
+      axios.post(
+        "https://api-beacon.adcm.co.th/api/message",
+        {
+          campaign_name,
+          start_datetime: `${startDate}T${startTime}`,
+          end_datetime: `${endDate}T${endTime}`,
+          recieving_freq_uuid: selectedFrequency,
+          beacon_action: "enter",
+          device_uuid: devices,
+          message: messageCondition,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      ),
+      {
+        loading: "กำลังสร้างสื่อ",
+        success: () => {
+          navigate("/content");
+          return "สร้างสื่อสำเร็จ";
+        },
+        error: (err) => {
+          console.log(err.response.status);
 
-    const response = await axios.post(
-      "https://api-beacon.adcm.co.th/api/message",
-      {
-        campaign_name,
-        start_datetime: `${startDate}T${startTime}`,
-        end_datetime: `${endDate}T${endTime}`,
-        recieving_freq_uuid: frequency,
-        beacon_action: "enter",
-        device_uuid: selectedDevices,
-        message: messageCondition,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          if (err.response.status === 401) {
+            return "คุณไม่มีสิทธิ์ในการสร้างสื่อ";
+          } else if (err.response.status === 400) {
+            return "กรุณากรอกข้อมูลให้ครบถ้วน";
+          }
+          return "เกิดข้อผิดพลาดในการสร้างสื่อ";
         },
       }
     );
-    console.log(response);
   };
 
   const handleSelectedChange = React.useCallback((selected: Framework[]) => {
