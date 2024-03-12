@@ -259,10 +259,10 @@ const DialogDeleteContent: FC<{
           ลบคอนเทนต์
         </DialogTitle>
         <DialogDescription className="text-base font-light">
-          <p>
+          <div>
             คุณต้องการลบคอนเทนต์{" "}
             <span className="font-bold">{contentName}</span> ใช่หรือไม่ ?
-          </p>
+          </div>
         </DialogDescription>
         <DialogFooter className="flex-col sm:justify-center gap-1">
           <Button
