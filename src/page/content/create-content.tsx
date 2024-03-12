@@ -100,7 +100,6 @@ export const CreateContent: React.FC = () => {
   const startTimeRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
   const endTimeRef = useRef<HTMLInputElement>(null);
-  const [checkValue, setCheckValue] = useState("Always");
   const [selectedDevices, setSelectedDevices] = useState<string[]>([]);
   const [frequency, setFrequency] = useState("");
 
@@ -197,8 +196,10 @@ export const CreateContent: React.FC = () => {
       const newContentTypes = [...prevContentTypes];
       newContentTypes[index].type = type;
 
+      console.log(newContentTypes);
+
       if (type === "text") {
-        newContentTypes[index].text = "";
+        newContentTypes[index].text = contentTypes[index]?.text ?? "";
       } else if (type === "image" || type === "video") {
         newContentTypes[index].originalContentUrl = "";
         newContentTypes[index].previewImageUrl = "";
@@ -260,6 +261,26 @@ export const CreateContent: React.FC = () => {
       newContentTypes[index].originalContentUrl =
         baseURL + response.data.response_data.data.original;
       newContentTypes[index].previewImageUrl =
+        baseURL + response.data.response_data.data.original;
+      return newContentTypes;
+    });
+  };
+
+  const handleTemplateUploadAtIndex = async (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("media", file as Blob);
+    const response = await axios.post(
+      "https://api-beacon.adcm.co.th/api/media/upload",
+      formData
+    );
+    setContentTypes((prevContentTypes) => {
+      const newContentTypes = [...prevContentTypes];
+      newContentTypes[index].template!.columns[0].imageUrl =
         baseURL + response.data.response_data.data.original;
       return newContentTypes;
     });
@@ -344,15 +365,15 @@ export const CreateContent: React.FC = () => {
             </Label>
             <Input
               onChange={(e) => {
-                handleImageUploadAtIndex(index, e);
+                handleTemplateUploadAtIndex(index, e);
               }}
               type="file"
               id={`uploadImage-${index}`}
               accept="image/*"
             />
-            {value.originalContentUrl && (
+            {value.template?.columns[0].imageUrl && (
               <img
-                src={value.originalContentUrl}
+                src={value.template?.columns[0].imageUrl}
                 alt="preview"
                 className="w-32 h-32 mt-2 rounded-md"
               />
@@ -363,9 +384,6 @@ export const CreateContent: React.FC = () => {
         return "ข้อความ";
     }
   };
-
-  console.log(contentTypes);
-
   return (
     <div>
       <h1 className="text-3xl font-bold text-[#B28A4C] mb-2 ">สร้างสื่อใหม่</h1>
@@ -542,37 +560,7 @@ export const CreateContent: React.FC = () => {
             type="text"
           />
         </fieldset>
-        <div className=" flex gap-2">
-          <div className="flex items-center gap-2">
-            <input
-              className="radio radio-primary radio-sm"
-              type="radio"
-              id="always"
-              name="period"
-              value="Always"
-              checked={checkValue === "Always"}
-              onChange={() => setCheckValue("Always")}
-            />
-            <label className="label-text" htmlFor="always">
-              สม่ำเสมอ
-            </label>
-          </div>
-          <div className="flex items-center gap-4">
-            <input
-              className="radio radio-primary radio-sm"
-              type="radio"
-              id="specific"
-              name="period"
-              checked={checkValue === "Specific Time"}
-              value="Specific Time"
-              onChange={() => setCheckValue("Specific Time")}
-            />
-            <label className="label-text" htmlFor="specific">
-              เฉพาะช่วง
-            </label>
-          </div>
-        </div>
-        <div />
+
         <div>
           <Label className="label-text">
             <span>ความถี่ในการรับ</span>
