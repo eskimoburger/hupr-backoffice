@@ -379,7 +379,7 @@ const EditContent = () => {
         <span>ข้อความ</span>
       </Label>
 
-      {contentTypes.map((content, index) => (
+      {contentTypes.map((_, index) => (
         <div
           key={index}
           className="mt-2 bg-[#B28A4C33] p-4 rounded-md grid grid-cols-2 gap-6 "
