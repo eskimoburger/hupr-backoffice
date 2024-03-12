@@ -29,9 +29,11 @@ const TableBody = React.forwardRef<
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
   <tbody
+  max-width={1}
     ref={ref}
     className={cn("[&_tr:last-child]:border-0", className)}
     {...props}
+    
   />
 ))
 TableBody.displayName = "TableBody"

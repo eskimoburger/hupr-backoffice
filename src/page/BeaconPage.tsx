@@ -262,7 +262,7 @@ const DeviceDrawerEdit: FC<{
       },
       {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       }
 
@@ -381,7 +381,7 @@ const DiologDeleteDevice: FC<{
     axios.delete('https://api-beacon.adcm.co.th/api/device/' + rowdata.uuid,
       {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
 
         }
       })

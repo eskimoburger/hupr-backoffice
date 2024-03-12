@@ -10,6 +10,7 @@ import WaitPage from "./page/WaitPage";
 import { useProvideAuth } from "./hooks";
 import { AuthContext } from "./contexts";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { DetailContent } from "./page/content/detail-content";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,14 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
+          {
+            path: "detail/:id",
+            element: (
+              <ProtectedRoute>
+                <DetailContent />
+              </ProtectedRoute>
+            ),
+          }
         ],
       },
       {
