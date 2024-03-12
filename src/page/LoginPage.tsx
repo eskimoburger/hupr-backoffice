@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import liff from "@line/liff";
 import LineLogo from "@/assets/line_88.png";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import Logo from "@/assets/logo";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -9,16 +9,35 @@ import { useAuth } from "@/hooks";
 const LoginPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
-  const liffInit = async () => {
+  const liffInit = useCallback(async () => {
     try {
       await liff.init({ liffId: import.meta.env.VITE_LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const token = liff.getIDToken();
+        const res = await axios.post(
+          `https://api-beacon.adcm.co.th/api/auth/login-line`,
+          {
+            token,
+          }
+        );
+
+        if (!res.data.response_data.data.user.active) {
+          navigate("/wait");
+        } else {
+          navigate("/");
+          const { access_token, refresh_token, user } =
+            res.data.response_data.data;
+          auth.login(access_token, refresh_token, user.uuid);
+        }
+      }
     } catch (error) {
       console.error(error);
+      navigate("/not-member");
     }
-  };
+  }, [navigate, auth]);
   useEffect(() => {
     liffInit();
-  }, []);
+  }, [liffInit]);
 
   const handleLogin = async () => {
     try {

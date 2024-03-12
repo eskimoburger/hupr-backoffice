@@ -30,6 +30,7 @@ export default function useProvideAuth() {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
+    localStorage.clear();
     setToken(null);
     setRefreshToken(null);
     setIsLogin(false);
