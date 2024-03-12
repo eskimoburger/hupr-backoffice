@@ -114,7 +114,7 @@ const generateColumnDefinitions = (
   },
   {
     accessorKey: "action",
-    header: () =>  null,
+    header: () => null,
     cell(props) {
       const active = props.row.original.active;
       return (
@@ -189,7 +189,7 @@ const MemberDrawerEdit: FC<{
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       )
@@ -269,7 +269,6 @@ const MemberDrawerEdit: FC<{
                 }}
               />
             </div>
-      
 
             {isEdit && (
               <div className="grid grid-cols-2 gap-6 mx-3">
@@ -388,7 +387,7 @@ export const DialogDeleteMember: FC<{
         `https://api-beacon.adcm.co.th/api/user/${memberId}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -450,7 +449,7 @@ const DialogApproveMember: FC<{
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -541,7 +540,7 @@ const Member = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       )
@@ -592,7 +591,7 @@ const Member = () => {
             </h3>
             <div className="flex flex-col gap-4 mt-4 w-full ">
               <div>
-                อีเมล {" "}
+                อีเมล{" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกอีเมล"
@@ -605,7 +604,7 @@ const Member = () => {
               </div>
 
               <div>
-                ชื่อ {" "}
+                ชื่อ{" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกชื่อ"
@@ -618,7 +617,7 @@ const Member = () => {
               </div>
 
               <div>
-                นามสกุล {" "}
+                นามสกุล{" "}
                 <input
                   type="text"
                   placeholder="กรุณากรอกนามสกุล"

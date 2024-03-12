@@ -240,7 +240,7 @@ const DeviceDrawerEdit: FC<{
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       )
