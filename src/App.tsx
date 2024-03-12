@@ -1,4 +1,5 @@
 import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { Layout } from "./layout/Layout";
 import BeaconPage from "./page/BeaconPage";
 import DashboardPage from "./page/DashboardPage";
@@ -111,6 +112,11 @@ function App() {
   return (
     <AuthContext.Provider value={auth}>
       <RouterProvider router={router} />
+      <Toaster
+        toastOptions={{
+          duration: 3000,
+        }}
+      />
     </AuthContext.Provider>
   );
 }
