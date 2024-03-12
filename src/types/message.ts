@@ -5,6 +5,12 @@ interface BeaconResponse {
     status: number;
     type: string;
     data: BeaconData[];
+    pagination: {
+      all_rows: number;
+      all_pages: number;
+      page_limit: number;
+      page_number: number;
+    };
   };
 }
 
