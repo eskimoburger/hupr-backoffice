@@ -35,11 +35,13 @@ const generateColumnDefinitions = (
 
       cell(props) {
         return (
-          <div className="flex justify-center">
+          <div className="flex justify-center text-center">
             {props.row.original.message_config.status === "expired" ? (
               <Badge variant={"destructive"}>หมดเวลา</Badge>
+            ) : props.row.original.message_config.status === "processing" ?(
+              <Badge  variant={"outline"}>กำลังดำเนินการ</Badge>
             ) : (
-              <Badge variant={"outline"}>ไม่พบสถานะ</Badge>
+              <Badge variant={"outline"}>รอดำเนินการ</Badge>
             )}
           </div>
         );
