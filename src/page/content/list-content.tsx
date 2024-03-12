@@ -1,5 +1,5 @@
 import { fetcher } from "@/api";
-import { BeaconData, BeaconResponse } from "@/types/message";
+// import { BeaconData, BeaconResponse } from "@/types/message";
 import { ColumnDef } from "@tanstack/react-table";
 import useSWR from "swr";
 import { DataTable } from "../data-table";
@@ -13,14 +13,23 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import PaginationCustom from "@/components/PaginationCustom";
-import { useState } from "react";
+import { FC, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import axios from "axios";
+import { ContentData, ResponseContents } from "@/types/content";
 
 const generateColumnDefinitions = (
-  handleInfo: (beacon: BeaconData) => void,
-  handleEdit: (beacon: BeaconData) => void,
-  handleDelete: (beacon: BeaconData) => void
-): ColumnDef<BeaconData>[] => [
+  handleInfo: (content: ContentData) => void,
+  handleEdit: (content: ContentData) => void,
+  handleDelete: (content: ContentData) => void
+): ColumnDef<ContentData>[] => [
   {
     accessorKey: "campaign_name",
     header: () => (
@@ -104,43 +113,6 @@ const generateColumnDefinitions = (
     cell({ row }) {
       const status = row.original.message_config.status;
       return (
-        // <div className="flex justify-center gap-2">
-        //   <button
-        //     onClick={() => handleEdit(props.row.original)}
-        //     className="btn btn-sm btn-primary text-white"
-        //   >
-        //     แก้ไข
-        //   </button>
-        //   <button
-        //     className="btn btn-sm btn-error text-white"
-        //     onClick={async () => {
-        //       const res = await fetch(
-        //         `https://api-beacon.adcm.co.th/api/message/${props.row.original.uuid}`,
-        //         {
-        //           method: "DELETE",
-        //           headers: {
-        //             "Content-Type": "application/json",
-        //             Authorization: "Bearer " + localStorage.getItem("token"),
-        //           },
-        //         }
-        //       );
-        //       if (res.ok) {
-        //         // alert("ลบสำเร็จ");
-        //         window.location.reload();
-        //       }
-        //       if (!res.ok) {
-        //         if (res.status === 403) {
-        //           refreshTokensAndRetry(
-        //             `https://api-beacon.adcm.co.th/api/message/${props.row.original.uuid}`
-        //           );
-        //         }
-        //       }
-        //     }}
-        //   >
-        //     ลบ
-        //   </button>
-        // </div>
-
         <div className="flex justify-center">
           <Popover>
             <PopoverTrigger asChild>
@@ -161,18 +133,7 @@ const generateColumnDefinitions = (
               >
                 <List size={18} className="mr-2" /> ดูรายละเอียด
               </Button>
-              {status === "processing" ? (
-                <Button
-                  size={"sm"}
-                  className="w-full space-x-2 flex justify-start hover:bg-[#B28A4C26]"
-                  variant={"ghost"}
-                  onClick={() => {
-                    handleEdit(row.original);
-                  }}
-                >
-                  <Edit size={18} className="mr-2" /> แก้ไข
-                </Button>
-              ) : (
+              {(status === "processing" || status === null) && (
                 <Button
                   size={"sm"}
                   className="w-full space-x-2 flex justify-start hover:bg-[#B28A4C26]"
@@ -204,26 +165,53 @@ const generateColumnDefinitions = (
 
 export const ListContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data } = useSWR<BeaconResponse>(
+  const [content, setContent] = useState<ContentData | null>(null);
+  const [isOpenDelete, setIsOpenDelete] = useState(false);
+  const { data, mutate } = useSWR<ResponseContents>(
     `https://api-beacon.adcm.co.th/api/message?page=${currentPage}&limit=10`,
     fetcher
   );
+
+  // const [conent];
 
   const navigate = useNavigate();
   const navigateToCreate = () => {
     navigate("/content/create");
   };
   const columns = generateColumnDefinitions(
-    (beacon) => {
-      console.log(beacon);
+    (content) => {
+      navigate(`/content/${content.uuid}`);
     },
-    (beacon) => {
-      navigate(`/content/edit/${beacon.uuid}`);
+    (content) => {
+      navigate(`/content/edit/${content.uuid}`);
     },
-    (beacon) => {
-      console.log(beacon);
+    (content) => {
+      setIsOpenDelete(true);
+      setContent(content);
     }
   );
+
+  const removeContent = async () => {
+    if (content) {
+      try {
+        const res = await axios.delete(
+          `https://api-beacon.adcm.co.th/api/message/${content.uuid}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          }
+        );
+        if (res.status === 200) {
+          setIsOpenDelete(false);
+          mutate();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
@@ -245,6 +233,56 @@ export const ListContent: React.FC = () => {
         totalItems={data?.response_data.pagination.all_rows ?? 0}
         setCurrentPage={setCurrentPage}
       />
+
+      <DialogDeleteContent
+        contentName={content?.campaign_name ?? ""}
+        open={isOpenDelete}
+        handleClose={setIsOpenDelete}
+        handleDeleteContent={() => {
+          removeContent();
+        }}
+      />
     </div>
+  );
+};
+
+const DialogDeleteContent: FC<{
+  contentName: string;
+  open: boolean;
+  handleClose: (open: boolean) => void;
+  handleDeleteContent: () => void;
+}> = ({ contentName, open, handleClose, handleDeleteContent }) => {
+  return (
+    <Dialog open={open} modal onOpenChange={handleClose}>
+      <DialogContent className="text-center max-w-xl h-[250px]" closeButton>
+        <DialogTitle className="text-2xl text-[#B28A4C]">
+          ลบคอนเทนต์
+        </DialogTitle>
+        <DialogDescription className="text-base font-light">
+          <p>
+            คุณต้องการลบคอนเทนต์{" "}
+            <span className="font-bold">{contentName}</span> ใช่หรือไม่ ?
+          </p>
+        </DialogDescription>
+        <DialogFooter className="flex-col sm:justify-center gap-1">
+          <Button
+            onClick={handleDeleteContent}
+            size={"lg"}
+            variant="destructive"
+          >
+            ลบคอนเทนต์
+          </Button>
+          <Button
+            onClick={() => {
+              handleClose(false);
+            }}
+            size={"lg"}
+            className="bg-[#A1A1A1] hover:bg-[#00000026]"
+          >
+            ยกเลิก
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
