@@ -17,7 +17,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Save, Trash2, X, Edit } from "lucide-react";
-import { MapPin } from 'lucide-react';
+import { MapPin } from "lucide-react";
 import axios from "axios";
 import {
   Dialog,
@@ -27,43 +27,41 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const generateColumnDefinitions = (
-): ColumnDef<Device>[] => [
-    {
-      accessorKey: "avatar",
-      header: () => null,
-      cell() {
-        return (
-          <div className="w-12 rounded-full ">
-            <img src={Beacon} alt="Beacon" />
-          </div>
-
-        );
-      },
+const generateColumnDefinitions = (): ColumnDef<Device>[] => [
+  {
+    accessorKey: "avatar",
+    header: () => null,
+    cell() {
+      return (
+        <div className="w-12 rounded-full ">
+          <img src={Beacon} alt="Beacon" />
+        </div>
+      );
     },
-    {
-      accessorKey: "hw_id",
-      header: "HWID",
+  },
+  {
+    accessorKey: "hw_id",
+    header: "HWID",
+  },
+  {
+    accessorKey: "name",
+    header: "ชื่ออุปกรณ์",
+  },
+  {
+    accessorKey: "datetime",
+    header: "วันที่เพิ่มอุปกรณ์",
+    cell(props) {
+      return new Date(props.row.original.datetime).toLocaleString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     },
-    {
-      accessorKey: "name",
-      header: "ชื่ออุปกรณ์",
-    },
-    {
-      accessorKey: "datetime",
-      header: "วันที่เพิ่มอุปกรณ์",
-      cell(props) {
-        return new Date(props.row.original.datetime).toLocaleString("th-TH", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
-      },
-    },
-  ];
+  },
+];
 
 const BeaconPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,20 +82,18 @@ const BeaconPage = () => {
     }
   }, [devices]);
 
-  const columns = useMemo(
-    () =>
-      generateColumnDefinitions(
-      ),
-    []
-  );
+  const columns = useMemo(() => generateColumnDefinitions(), []);
   return (
     <div>
       <h1 className="text-5xl font-bold text-[#B28A4C] mb-2">บีคอน</h1>
-      <DataTable columns={columns} data={devices?.response_data.data ?? []}
+      <DataTable
+        columns={columns}
+        data={devices?.response_data.data ?? []}
         onRowClick={(row) => {
-          setDeviceEdit(row)
-          setOpenDrawerDevice(true)
-        }} />
+          setDeviceEdit(row);
+          setOpenDrawerDevice(true);
+        }}
+      />
       <DeviceDrawer
         device={deviceEdit}
         open={openDrawerDevice}
@@ -120,7 +116,7 @@ const BeaconPage = () => {
           setOpenDrawerEditDevice(open);
         }}
       />
-      <DiologDeleteDevice
+      <DialogDeleteDevice
         device={deviceEdit}
         open={openDrawerDeleteDevice}
         handleClose={(open) => {
@@ -139,7 +135,6 @@ const BeaconPage = () => {
 };
 
 export default BeaconPage;
-
 
 const DeviceDrawer: FC<{
   device: Device | null;
@@ -161,9 +156,7 @@ const DeviceDrawer: FC<{
   }
 
   return (
-    <Drawer 
-    open={open} onOpenChange={handleClose} direction="right">
-    
+    <Drawer open={open} onOpenChange={handleClose} direction="right">
       <DrawerContent className="top-0 right-0 left-auto mt-0 w-[400px]  rounded-none  ">
         <div className="mx-auto w-full p-5 overflow-y-auto overflow-x-hidden h-screen ">
           <div className="flex items-center justify-between ">
@@ -192,60 +185,44 @@ const DeviceDrawer: FC<{
           </div>
           <div>
             <div className="flex items-center mt-4 mb-4">
-              <div
-                className="w-12 h-12   bg-[#B28A4C] rounded-full item-center flex justify-center pt-1 "
-              >
+              <div className="w-12 h-12   bg-[#B28A4C] rounded-full item-center flex justify-center pt-1 ">
                 <MapPin className="text-[#FFFFFF] w-10 h-10" />
               </div>
               <div className="ml-10 ">
                 <div className="font-bold text-2xl text-[#666666]">
                   ชื่ออุปกรณ์
                 </div>
-                <div className="text-xl font-extralight">
-                  {deviceName}
-                </div>
+                <div className="text-xl font-extralight">{deviceName}</div>
               </div>
-
             </div>
             <hr />
             <div className="flex items-center justify-between mt-4 gap-2">
               <Button
-                onClick={handleOpenDelect} size={"sm"}
+                onClick={handleOpenDelect}
+                size={"sm"}
                 variant="default"
                 className=" flex items-center gap-2 bg-[#E34545] w-[250px] text-white text-xl hover:bg-[#E34545]/80 hover:text-white"
               >
                 <Trash2 /> ลบอุปกรณ์
               </Button>
 
-
               <Button
                 onClick={handleOpenEdit}
                 size={"sm"}
                 variant="default"
                 className=" flex items-center gap-2 bg-[#B28A4C] w-[250px] text-white text-xl hover:bg-[#B28A4C]/80 hover:text-white"
-
               >
                 <Edit className="mr-2" /> แก้ไข
               </Button>
-
-
-
-
-
-
             </div>
-
           </div>
         </div>
 
-        <DrawerFooter>
-
-        </DrawerFooter>
+        <DrawerFooter></DrawerFooter>
       </DrawerContent>
     </Drawer>
-
-  )
-}
+  );
+};
 
 const DeviceDrawerEdit: FC<{
   device: Device | null;
@@ -255,25 +232,26 @@ const DeviceDrawerEdit: FC<{
   const [deviceName, setDeviceName] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const updateRecord = (rowdata: any) => {
-    axios.put('https://api-beacon.adcm.co.th/api/device/' + rowdata.uuid,
-      {
-        name: deviceName
-
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+    axios
+      .put(
+        "https://api-beacon.adcm.co.th/api/device/" + rowdata.uuid,
+        {
+          name: deviceName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-      }
-
-    )
-      .then(res => {
-        console.log(res)
-        window.location.reload()
-      }).catch(err => {
-        console.log(err)
+      )
+      .then((res) => {
+        console.log(res);
+        window.location.reload();
       })
-  }
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   useEffect(() => {
     if (device) {
@@ -284,20 +262,15 @@ const DeviceDrawerEdit: FC<{
     return null;
   }
   return (
-    
     <Drawer
       open={open}
       onOpenChange={handleClose}
       direction="right"
       onClose={() => {
         setDeviceName(device.name);
-
-      }
-      }
+      }}
     >
-      <DrawerHeader>
-     
-      </DrawerHeader>
+      <DrawerHeader></DrawerHeader>
       <DrawerContent className="top-0 right-0 left-auto mt-0 w-[400px]  rounded-none  ">
         <div className="mx-auto w-full p-5 overflow-y-auto overflow-x-hidden h-screen ">
           <div className="flex items-center justify-between ">
@@ -324,7 +297,7 @@ const DeviceDrawerEdit: FC<{
               <X size={18} />
             </DrawerClose>
           </div>
-          
+
           <div>
             <input
               type="text"
@@ -336,10 +309,11 @@ const DeviceDrawerEdit: FC<{
               }}
             />
             {isEdit && (
-
               <div className="flex items-center justify-between mt-4 gap-2">
                 <Button
-                  onClick={() => { updateRecord(device) }}
+                  onClick={() => {
+                    updateRecord(device);
+                  }}
                   size={"sm"}
                   variant="default"
                   className=" flex items-center gap-2 bg-[#B28A4C] w-[250px] text-white text-xl hover:bg-[#B28A4C]/80 hover:text-white"
@@ -363,35 +337,32 @@ const DeviceDrawerEdit: FC<{
           </div>
         </div>
 
-        <DrawerFooter>
-
-        </DrawerFooter>
+        <DrawerFooter></DrawerFooter>
       </DrawerContent>
     </Drawer>
-  )
-}
+  );
+};
 
-
-const DiologDeleteDevice: FC<{
+const DialogDeleteDevice: FC<{
   device: Device | null;
   open: boolean;
   handleClose: (open: boolean) => void;
 }> = ({ device, open, handleClose }) => {
-  const delectRecord = (rowdata: any) => {
-    axios.delete('https://api-beacon.adcm.co.th/api/device/' + rowdata.uuid,
-      {
+  const deleteRecord = (rowdata: any) => {
+    axios
+      .delete("https://api-beacon.adcm.co.th/api/device/" + rowdata.uuid, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       })
-      .then(res => {
-        console.log(res)
-        window.location.reload()
-      }).catch(err => {
-        console.log(err)
+      .then((res) => {
+        console.log(res);
+        window.location.reload();
       })
-  }
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <Dialog open={open} modal onOpenChange={handleClose}>
       <DialogContent className="text-center max-w-xl h-[250px]" closeButton>
@@ -406,7 +377,7 @@ const DiologDeleteDevice: FC<{
           <Button
             onClick={() => {
               if (device) {
-                delectRecord(device);
+                deleteRecord(device);
               }
             }}
             size={"lg"}
@@ -426,6 +397,5 @@ const DiologDeleteDevice: FC<{
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
+  );
+};
