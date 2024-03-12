@@ -3,12 +3,14 @@ import { FC } from "react";
 const Logo: FC<{
   width?: string;
   height?: string;
-}> = ({ width = "48", height = "48" }) => (
+  className?: string;
+}> = ({ width = "48", height = "48", className = "" }) => (
   <svg
     {...{ width, height }}
     viewBox="0 0 52 52"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    className={className}
   >
     <path
       fillRule="evenodd"

@@ -1,18 +1,20 @@
 import { Button } from "@/components/ui/button";
 import liff from "@line/liff";
 import LineLogo from "@/assets/line_88.png";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Logo from "@/assets/logo";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks";
 const LoginPage = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
   const navigate = useNavigate();
   const liffInit = useCallback(async () => {
     try {
       await liff.init({ liffId: import.meta.env.VITE_LIFF_ID });
       if (liff.isLoggedIn()) {
+        setIsLoading(true);
         const token = liff.getIDToken();
         const res = await axios.post(
           `https://api-beacon.adcm.co.th/api/auth/login-line`,
@@ -24,7 +26,9 @@ const LoginPage = () => {
         if (!res.data.response_data.data.user.active) {
           navigate("/wait");
         } else {
-          navigate("/");
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
           const { access_token, refresh_token, user } =
             res.data.response_data.data;
           auth.login(access_token, refresh_token, user.uuid);
@@ -65,6 +69,23 @@ const LoginPage = () => {
       navigate("/not-member");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col  items-center justify-center">
+        <Logo width="100" height="100" className="animate-bounce" />
+        <div className="text-[#666666] text-8xl font-bold flex items-center animate-bounce">
+          <span className="text-[#B28A4C]">HU</span>
+          <span>PR</span>
+        </div>
+        <div className="my-6" />
+        <div className="text-[#A1A1A1] text-center animate-bounce">
+          <h1 className="text-xl font-bold ">กำลังดำเนินการ</h1>
+          <p className="text-base font-light">กรุณารอสักครู่</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className=" h-full flex flex-col  items-center justify-center">
