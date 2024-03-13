@@ -69,13 +69,13 @@ const EditContent = () => {
       const startDate = add(
         parseISO(messageConfig.start_datetime ?? new Date().toISOString()),
         {
-          hours: 7,
+          hours: 0,
         }
       ).toISOString();
       const endDate = add(
         parseISO(messageConfig.end_datetime ?? new Date().toISOString()),
         {
-          hours: 7,
+          hours: 0,
         }
       ).toISOString();
 

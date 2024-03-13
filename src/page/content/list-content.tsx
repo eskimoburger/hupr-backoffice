@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { ContentData, ResponseContents } from "@/types/content";
+import { format, sub } from "date-fns";
+import { th } from "date-fns/locale";
 
 const generateColumnDefinitions = (
   handleInfo: (content: ContentData) => void,
@@ -81,26 +83,24 @@ const generateColumnDefinitions = (
   },
   {
     accessorFn: (row) =>
-      new Date(row.message_config.start_datetime).toLocaleString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
+      format(
+        sub(new Date(row.message_config.start_datetime), {
+          hours: 7,
+        }),
+        "dd MMMM yyyy เวลา HH:mm:ss",
+        { locale: th }
+      ),
     header: "เริ่ม",
   },
   {
     accessorFn: (row) =>
-      new Date(row.message_config.end_datetime).toLocaleString("th-TH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
+      format(
+        sub(new Date(row.message_config.end_datetime), {
+          hours: 7,
+        }),
+        "dd MMMM yyyy เวลา HH:mm:ss",
+        { locale: th }
+      ),
     header: "สิ้นสุด",
   },
   {
