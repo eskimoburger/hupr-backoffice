@@ -208,9 +208,9 @@ export const CreateContent: React.FC = () => {
     const endDateTime = `${endDate}T${endTime}`;
 
     const utc7StartDate = add(parseISO(startDateTime), {
-      hours: 7,
+      hours: 0,
     }).toISOString();
-    const utc7EndDate = add(parseISO(endDateTime), { hours: 7 }).toISOString();
+    const utc7EndDate = add(parseISO(endDateTime), { hours: 0 }).toISOString();
 
     toast.promise(
       axios.post(

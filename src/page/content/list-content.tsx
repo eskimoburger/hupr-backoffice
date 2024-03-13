@@ -85,7 +85,7 @@ const generateColumnDefinitions = (
     accessorFn: (row) =>
       format(
         sub(new Date(row.message_config.start_datetime), {
-          hours: 7,
+          hours: 0,
         }),
         "dd MMMM yyyy เวลา HH:mm:ss",
         { locale: th }
@@ -96,7 +96,7 @@ const generateColumnDefinitions = (
     accessorFn: (row) =>
       format(
         sub(new Date(row.message_config.end_datetime), {
-          hours: 7,
+          hours: 0,
         }),
         "dd MMMM yyyy เวลา HH:mm:ss",
         { locale: th }

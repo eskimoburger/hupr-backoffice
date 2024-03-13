@@ -61,13 +61,13 @@ const ContentDetail = () => {
       const startDate = add(
         parseISO(messageConfig.start_datetime ?? new Date().toISOString()),
         {
-          hours: 0,
+          hours: 7,
         }
       ).toISOString();
       const endDate = add(
         parseISO(messageConfig.end_datetime ?? new Date().toISOString()),
         {
-          hours: 0,
+          hours: 7,
         }
       ).toISOString();
 
